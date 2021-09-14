@@ -1,0 +1,9 @@
+<div style="margin: 5%;" class="row">
+	<div class="col">
+		<select *ngIf="countries.length !=0" name="" id="" style="padding: 10px; margin-bottom:10px" (change)="changeCity()" [(ngModel)]="country">
+		  <option selected hidden value="">Séléctionner un pays</option>
+		  <option *ngFor="let country of countries" value="{{country}}">{{country}}</option>
+		</select>
+	</div>
+    <div id="map" class="col"></div>
+</div>
