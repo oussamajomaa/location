@@ -1,4 +1,5 @@
-<div style="margin: 5%;" class="row">
+<div style="margin: 5%;" class="row map">
+	<div *ngIf="!loading" class="spinner"></div>
 	<div class="col-12">
 		<select *ngIf="countries.length !=0" name="" id="" style="padding: 10px; margin-bottom:10px" (change)="changeCity()" [(ngModel)]="country">
 		  <option selected hidden value="">Séléctionner un pays</option>

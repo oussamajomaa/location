@@ -18,6 +18,7 @@ export class MapComponent implements AfterViewInit {
 	coords = []
 	marker:any
 	markers = []
+	loading=false
 
 	smallIcon = new L.Icon({
 		iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-icon.png',
@@ -39,8 +40,11 @@ export class MapComponent implements AfterViewInit {
 				if (!this.countries.find(country => country === location.country)){
 					this.countries.push(location.country)
 					this.countries = this.countries.sort()
+					this.loading = false
 				}
+				
 			})
+			this.loading = true
 		})
 		
 		this.createMap();
