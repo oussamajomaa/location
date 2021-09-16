@@ -18,7 +18,10 @@ export class HomeComponent implements OnInit {
 	logout(){
 		this.dataService.logout()
 		this.router.navigateByUrl('/login')
-		
+	}
+
+	map(){
+		this.router.navigateByUrl('/map')
 	}
 
 
