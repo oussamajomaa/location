@@ -15,9 +15,22 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from "@angular/material/icon";
 import { MatInputModule } from '@angular/material/input';
+import {MatSelectModule} from '@angular/material/select';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatToolbarModule } from '@angular/material/toolbar';
+
+import { MatListModule } from "@angular/material/list";
+import { MatSidenavModule } from "@angular/material/sidenav";
+
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { HomeComponent } from './home/home.component';
+import { LocationComponent } from './location/location.component';
 
+import { environment } from 'src/environments/environment';
+import { AngularFireModule } from '@angular/fire/compat'
+import { AngularFireAuthModule } from '@angular/fire/compat/auth';
+import { AngularFireDatabaseModule } from '@angular/fire/compat/database';
+import { AngularFireStorageModule } from '@angular/fire/compat/storage';
 
 
 @NgModule({
@@ -25,7 +38,8 @@ import { HomeComponent } from './home/home.component';
     AppComponent,
     MapComponent,
     LoginComponent,
-    HomeComponent
+    HomeComponent,
+    LocationComponent,
   ],
   imports: [
     BrowserModule,
@@ -41,7 +55,17 @@ import { HomeComponent } from './home/home.component';
     MatButtonModule,
     MatIconModule,
     MatInputModule,
-    FlexLayoutModule
+    FlexLayoutModule,
+    MatSelectModule,
+    MatMenuModule,
+    MatToolbarModule,
+    MatListModule,
+    MatSidenavModule,
+    AngularFireModule.initializeApp(environment.firebaseConfig),
+    AngularFireAuthModule,
+    AngularFireDatabaseModule,
+    AngularFireStorageModule,
+
     
   ],
   providers: [],

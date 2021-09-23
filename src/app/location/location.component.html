@@ -1,0 +1,50 @@
+<div class="location" >
+    <div *ngIf="!loading" class="spinner"></div>
+    <div  id="mapLocation" ><h6 class="click">Click on the map to get location</h6></div>
+
+    <div *ngIf="loading" class="form">
+        <h1 class="title">Add new location</h1>
+        <div  class="form-input">
+            <div>
+                <mat-form-field appearance="fill">
+                    <mat-label>Pays</mat-label>
+                    <mat-select [(ngModel)]="country" required (selectionChange)="onChangeCountry($event)">
+                        <mat-option *ngFor="let row of countries" value="{{row.id}}">{{row.country}}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+    
+            <div>
+                <mat-form-field appearance="fill">
+                    <mat-label>Ville</mat-label>
+                    <input matInput [(ngModel)]="city" required>
+                </mat-form-field>
+            </div>
+        </div>
+        <div  class="form-input">
+            <div>
+                <mat-form-field appearance="fill">
+                    <mat-label>Lat</mat-label>
+                    <input matInput [(ngModel)]="lat" type="number" required>
+                </mat-form-field>
+            </div>
+            <div>
+                <mat-form-field appearance="fill">
+                    <mat-label>Lng</mat-label>
+                    <input matInput [(ngModel)]="lng" type="number" required>
+                </mat-form-field>
+            </div>
+
+        </div>
+        
+        <div>
+            <button 
+                class="submit"
+                (click)="onSubmit()"
+                mat-raised-button 
+                [disabled]="!country || !city || !lat || !lng"
+                color="primary">Save
+            </button>
+        </div>
+    </div>
+</div>

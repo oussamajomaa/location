@@ -1,10 +1,33 @@
-<div style="margin: 5%;" class="row map">
+
+
+<div>
 	<div *ngIf="!loading" class="spinner"></div>
-	<div class="col-12">
-		<select *ngIf="countries.length !=0" name="" id="" style="padding: 10px; margin-bottom:10px" (change)="changeCity()" [(ngModel)]="country">
-		  <option selected hidden value="">Séléctionner un pays</option>
-		  <option *ngFor="let country of countries" value="{{country}}">{{country}}</option>
-		</select>
+	<div class="enter-text">
+		<div class="text-area">
+			<textarea placeholder="Enter the text..." rows="5" [(ngModel)]="text" ></textarea>
+			<button (click)="findCityInText()" mat-raised-button color="primary" style="margin-bottom: 10px;">Search</button>
+			<span  class="msg">{{msg}}</span>
+			<button (click)="clearText()" mat-raised-button color="accent" style="margin-bottom: 10px;">Clear</button>
+		</div>
+
+		<div class="dropzone">
+			<input type="file" accept=".txt" id="fileDropRef" (change)="fileUpload($event)" #myInput>
+			<h3>Drag and drop file here or</h3>
+
+			<label for="fileDropRef"> &nbsp;<strong>Browse for file</strong></label>
+		</div>
+
 	</div>
-    <div id="map" class="col"></div>
+	<div >
+		<mat-form-field appearance="fill">
+			<mat-label>Séléctionner un pays</mat-label>
+			<mat-select (selectionChange)="changeCity()" [(ngModel)]="country">
+				<mat-option *ngFor="let row of countries" value="{{row.country}}">{{row.country}}</mat-option>
+			</mat-select>
+		</mat-form-field>
+	</div>
+    <div id="map"></div>
 </div>
+
+	
+

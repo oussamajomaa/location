@@ -11,9 +11,19 @@ export class DataService {
 	}
 
 	getLocation(){
-		// return this.http.get('http://localhost:5000/cities')
-		return this.http.get('https://hpynimf4j3.execute-api.us-east-1.amazonaws.com/step/get-location')
+		return this.http.get('http://localhost:5000/cities')
+		// return this.http.get('https://hpynimf4j3.execute-api.us-east-1.amazonaws.com/step/get-location')
 	}
+
+	getCountries(){
+		return this.http.get('http://localhost:5000/countries')
+	}
+	getGeoJson(){
+		// return this.http.get('http://localhost:5000/geojson')
+		// return this.http.get('https://hpynimf4j3.execute-api.us-east-1.amazonaws.com/step/get-location')
+	}
+
+
 
 	login(user){
 		return this.http.post(`${environment.url}/login`,user)

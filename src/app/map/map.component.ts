@@ -1,8 +1,7 @@
-import { Component, AfterViewInit } from '@angular/core';
-import * as L from 'leaflet';
 import { HttpClient } from '@angular/common/http';
+import { Component, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
+import * as L from 'leaflet';
 import { DataService } from '../services/data.service';
-import { v4 as uuid } from 'uuid';
 
 
 @Component({
@@ -11,6 +10,9 @@ import { v4 as uuid } from 'uuid';
   styleUrls: ['./map.component.css']
 })
 export class MapComponent implements AfterViewInit {
+
+	@ViewChild('myInput') myInputVariable: ElementRef;
+
 	map:any
 	locations = []
 	country=''
@@ -19,6 +21,13 @@ export class MapComponent implements AfterViewInit {
 	marker:any
 	markers = []
 	loading=false
+	geojson:any
+	text:string
+	foundCities = []
+	foundCountries = []
+	file:any;
+	msg:string
+	polyline:any
 
 	smallIcon = new L.Icon({
 		iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-icon.png',
@@ -28,38 +37,26 @@ export class MapComponent implements AfterViewInit {
 		popupAnchor: [0, -10],
 		shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
 		shadowSize:  [10, 10]
-	  });
+	});
 
-	constructor(private http:HttpClient, private dataService:DataService) { }
+	constructor(private dataService:DataService, private http:HttpClient) { }
 
 	ngAfterViewInit(): void {
-		this.dataService.getLocation().subscribe((res:any) => {
-			console.log(res)
-			this.locations = res
-			this.locations.map(location => {
-				if (!this.countries.find(country => country === location.country)){
-					this.countries.push(location.country)
-					this.countries = this.countries.sort()
-					this.loading = false
-				}
-				
-			})
-			this.loading = true
-		})
 		
-		this.createMap();
-		// const word = "osm"
-		// var input ="Bonjour OSM, comment vas-tu. osm va Osm très bien, merci. osmosm";
-		// var regex = new RegExp("\\b"+word+"\\b")
-		// var found = input.match(new RegExp(regex,'gi'))
-		// console.log(found)
+		this.dataService.getLocation().subscribe((res:any) => {
+			this.locations = res
+		})
+		this.dataService.getCountries()
+		.subscribe((res:any) => {
+			this.countries = res
+			this.loading = true
+		})	
 	}
 
-	createMap(){
-		
+	createMap(lat,lng,z){
 		this.map = L.map('map', {
-			center: [ 0, 0],
-			zoom: 2
+			center: [ lat, lng],
+			zoom: z
 		});
 	  
 		const mainLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -73,15 +70,102 @@ export class MapComponent implements AfterViewInit {
 
 
 	changeCity(){
+		// supprimer l'ancienne carte
+		if (this.map) this.map.remove()
+
+		// supprimer les anciens markers
 		if (this.markers.length>0) {
 			this.markers.map(marker => this.map.removeLayer(marker))
 		}
+
+		// filtrer les coordonnées selon un pays choisi
 		this.coords = this.locations.filter(res => res.country === this.country)
-		this.coords.map(location => {
+
+		// créer la carte 
+		this.createMap(this.coords[0]['lat'],this.coords[0]['lng'],4)
+		this.geoJson('assets/data/countries.json',this.country)
+
+	}
+
+	geoJson(url:string,country:string){
+		this.http.get(url).subscribe((res:any) => {
+			this.geojson = res
+			this.geojson = this.geojson.features.filter(data => data.properties['ADMIN'] === country)
+			L.geoJSON(this.geojson).addTo(this.map)
+		})
+	}
+
+
+	findCityInText(){
+		this.foundCities = []
+		this.foundCountries = []
+		this.locations.map(location => {
+			// Chercher une ville dans text
+			let cityRegex = new RegExp("\\b"+location.city+"\\b")
+			// Chercher un pays dans text
+			let countryRegex = new RegExp("\\b"+location.country+"\\b")
+			if (this.text.match(new RegExp(cityRegex,'g'))){
+				this.foundCities.push(location)
+			}	
+			if (this.text.match(new RegExp(countryRegex,'g'))){
+				if (!this.foundCountries.find(country => location.country === country))
+					this.foundCountries.push(location.country)
+			}	
+		})
+
+		// Call the method geoJson to hilight country
+		this.foundCountries.map(country => {
+			this.geoJson('assets/data/countries.json',country)
+		})
+
+		if (this.map) this.map.remove()
+		
+		if (this.markers.length > 0){
+			this.markers.map(marker => this.map.removeLayer(marker))
+		}
+
+		if (this.foundCities.length > 0){
+			this.createMap(this.foundCities[0]['lat'], this.foundCities[0]['lng'],2)
+			this.msg = ''
+		}
+		else {
+			this.createMap(0, 0,2)
+			this.msg = "aucune ville ou pays trouvés dans le text"
+		}
+
+		// Ajouter les markers sur la carte
+		const c = []
+		this.foundCities.map(location => {
 			this.marker = L.marker([location.lat, location.lng],{ icon: this.smallIcon })
 			this.marker.addTo(this.map).bindPopup(location.city)
-			this.markers.push(this.marker)
+			this.markers.push(this.marker)	
+			let x = location.lat
+			let y = location.lng
+			c.push([x,y])
 		})
+
+		// relier les markers avec une ligne
+		this.polyline = L.polyline(c)
+		this.polyline.addTo(this.map)
+		
+		// Empty input file
+		this.myInputVariable.nativeElement.value = ''
+		this.clearText()
+	}
+
+	// Cette méthode est pour lire un fichier text télécharger dans le navigateur
+	fileUpload(e) {
+		this.file = e.target.files[0];
+		let fileReader = new FileReader();
+		fileReader.onload = () => {
+		  this.text = fileReader.result as string		  
+		}
+		fileReader.readAsText(this.file);
+	}
+
+	// Vider le textarea
+	clearText(){
+		this.text = ''
 	}
 
 }
