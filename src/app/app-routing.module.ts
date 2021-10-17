@@ -4,18 +4,24 @@ import { HomeComponent } from './home/home.component';
 import { LocationComponent } from './location/location.component';
 import { LoginComponent } from './login/login.component';
 import { MapComponent } from './map/map.component';
+import { NotFoundComponent } from './not-found/not-found.component';
 import { AuthGuard } from './services/auth.guard';
-
 const routes: Routes = [
-  {path:'',pathMatch:'full',redirectTo:'login'},
+  {path:'',pathMatch:'full',redirectTo:'map'},
   {path:'login', component:LoginComponent},
   {path:'home', component:HomeComponent},
-  {path:'map', component:MapComponent, canActivate:[AuthGuard]},
+  {path:'map', component:MapComponent},
   {path:'location', component:LocationComponent},
+  { path: '**', component: NotFoundComponent },
 ];
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],
   exports: [RouterModule]
 })
-export class AppRoutingModule { }
+export class AppRoutingModule {
+  route = []
+  constructor(){
+
+  }
+ }

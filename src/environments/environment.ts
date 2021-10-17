@@ -3,6 +3,7 @@
 export const environment = {
   production: false,
   url:"https://ane8u5u2e5.execute-api.us-east-1.amazonaws.com/step",
+  url_menu:"https://mvxfcpog63.execute-api.us-east-1.amazonaws.com/step",
   firebaseConfig : {
     apiKey: "AIzaSyCOe-nuSCubL6bd0WVKyJnLC2cx9rIMurw",
     authDomain: "location-38ffa.firebaseapp.com",

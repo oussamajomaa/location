@@ -1,33 +1,48 @@
-
-
 <div>
 	<div *ngIf="!loading" class="spinner"></div>
 	<div class="enter-text">
 		<div class="text-area">
-			<textarea placeholder="Enter the text..." rows="5" [(ngModel)]="text" ></textarea>
-			<button (click)="findCityInText()" mat-raised-button color="primary" style="margin-bottom: 10px;">Search</button>
-			<span  class="msg">{{msg}}</span>
+			<textarea placeholder="Enter the text..." rows="5" [(ngModel)]="text"></textarea>
+			<button (click)="findCityInText()" mat-raised-button color="primary"
+				style="margin-bottom: 10px;">Search</button>
+			<span class="msg">{{msg}}</span>
 			<button (click)="clearText()" mat-raised-button color="accent" style="margin-bottom: 10px;">Clear</button>
 		</div>
 
 		<div class="dropzone">
-			<input type="file" accept=".txt" id="fileDropRef" (change)="fileUpload($event)" #myInput>
+			<input type="file" accept=".txt,.zip" id="fileDropRef" (change)="fileUpload($event)" #myInput>
 			<h3>Drag and drop file here or</h3>
 
 			<label for="fileDropRef"> &nbsp;<strong>Browse for file</strong></label>
 		</div>
 
 	</div>
-	<div >
-		<mat-form-field appearance="fill">
-			<mat-label>Séléctionner un pays</mat-label>
-			<mat-select (selectionChange)="changeCity()" [(ngModel)]="country">
-				<mat-option *ngFor="let row of countries" value="{{row.country}}">{{row.country}}</mat-option>
+	<div>
+		<div class="my-2 m-1  p-2  d-flex flex-wrap">
+			<Div *ngFor="let location of foundCities; let i=index" class="bg-warning m-1 p-2" style="border-radius: 20px;">
+				<label for="checkbox{{i}}">
+					<input type="checkbox" id="checkbox{{i}}" (click)="confirmLocation($event,location.id)"><span
+						class="ml-1">{{location.city}} {{location.country}}</span>
+				</label>
+			</Div>
+		</div>
+
+
+		<mat-form-field class=" mt-3">
+			<mat-label>Choose City (choice multiple)</mat-label>
+			<mat-select (selectionChange)="confirmCity()" multiple [(ngModel)]="ids">
+
+				<mat-option *ngFor="let location of foundCities" value="{{location.id}}">{{location.city}}
+					{{location.country}}</mat-option>
 			</mat-select>
 		</mat-form-field>
+
+		<!--<mat-form-field appearance="fill">
+			<mat-label>Séléctionner un pays</mat-label>
+			<mat-select (selectionChange)="changeCountry()" [(ngModel)]="country">
+				<mat-option *ngFor="let row of countries" value="{{row.country}}">{{row.country}}</mat-option>
+			</mat-select>
+		</mat-form-field>-->
 	</div>
-    <div id="map"></div>
+	<div id="map"></div>
 </div>
-
-	
-

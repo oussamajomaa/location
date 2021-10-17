@@ -1,7 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { DataService } from '../services/data.service';
-import jwt_decode from "jwt-decode";
-import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
 
@@ -17,7 +14,7 @@ export class LoginComponent implements OnInit {
     password:""
   }
   token:string
-  constructor(private authService:AuthService, private router:Router) { }
+  constructor(private authService:AuthService) { }
 
 	ngOnInit(): void {
 		

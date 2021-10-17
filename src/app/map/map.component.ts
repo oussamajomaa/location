@@ -3,7 +3,6 @@ import { Component, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import * as L from 'leaflet';
 import { DataService } from '../services/data.service';
 
-
 @Component({
   selector: 'app-map',
   templateUrl: './map.component.html',
@@ -28,6 +27,8 @@ export class MapComponent implements AfterViewInit {
 	file:any;
 	msg:string
 	polyline:any
+	cities = []
+	ids=[]
 
 	smallIcon = new L.Icon({
 		iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-icon.png',
@@ -49,6 +50,7 @@ export class MapComponent implements AfterViewInit {
 		this.dataService.getCountries()
 		.subscribe((res:any) => {
 			this.countries = res
+			
 			this.loading = true
 		})	
 	}
@@ -64,12 +66,13 @@ export class MapComponent implements AfterViewInit {
 			maxZoom: 20,
 			attribution: 'OSM'
 		});
-	  
 		mainLayer.addTo(this.map);	
+		L.layerGroup().addTo(this.map)
+		// https://www.youtube.com/watch?v=ax--7KkM_io	
 	}
 
 
-	changeCity(){
+	changeCountry(){
 		// supprimer l'ancienne carte
 		if (this.map) this.map.remove()
 
@@ -97,7 +100,9 @@ export class MapComponent implements AfterViewInit {
 
 
 	findCityInText(){
+		console.log('this.ids',this.ids);
 		this.foundCities = []
+		this.places = []
 		this.foundCountries = []
 		this.locations.map(location => {
 			// Chercher une ville dans text
@@ -113,6 +118,8 @@ export class MapComponent implements AfterViewInit {
 			}	
 		})
 
+		console.log('this.foundCities ',this.foundCities);
+		
 		// Call the method geoJson to hilight country
 		this.foundCountries.map(country => {
 			this.geoJson('assets/data/countries.json',country)
@@ -132,12 +139,56 @@ export class MapComponent implements AfterViewInit {
 			this.createMap(0, 0,2)
 			this.msg = "aucune ville ou pays trouvés dans le text"
 		}
+	}
+
+	// Cette méthode est pour lire un fichier text télécharger dans le navigateur
+	fileUpload(e) {
+		// remove markers when unselecting city
+		if (this.markers.length > 0){
+			this.markers.map(marker => this.map.removeLayer(marker))
+		}
+
+		// remove the line when unselecting city
+		if (this.polyline)
+			this.map.removeLayer(this.polyline)
+
+		this.file = e.target.files[0];
+		let fileReader = new FileReader();
+		fileReader.onload = () => {
+		  this.text = fileReader.result as string		  
+		}
+		fileReader.readAsText(this.file);
+	}
+
+	// Vider le textarea
+	clearText(){
+		this.text = ''
+		
+	}
+
+	confirmCity(){
+		console.log('this.ids',this.ids);
+		
+		// Get ids from location when choosing city and mapping ids array to find every city and push it in cities array
+		this.cities = this.ids.map(i =>{
+			console.log('iiiiiiiiiiiii',i);
+			return (this.locations.find(location => location.id === parseInt(i)))	
+		})
+
+		// remove markers when unselecting city
+		if (this.markers.length > 0){
+			this.markers.map(marker => this.map.removeLayer(marker))
+		}
+
+		// remove the line when unselecting city
+		if (this.polyline)
+			this.map.removeLayer(this.polyline)
 
 		// Ajouter les markers sur la carte
 		const c = []
-		this.foundCities.map(location => {
+		this.cities.map(location => {
 			this.marker = L.marker([location.lat, location.lng],{ icon: this.smallIcon })
-			this.marker.addTo(this.map).bindPopup(location.city)
+			this.marker.addTo(this.map).bindPopup(`<center><h3>${location.city}</h3><h2>${location.country}</h2></center>`)
 			this.markers.push(this.marker)	
 			let x = location.lat
 			let y = location.lng
@@ -151,21 +202,59 @@ export class MapComponent implements AfterViewInit {
 		// Empty input file
 		this.myInputVariable.nativeElement.value = ''
 		this.clearText()
+		
 	}
 
-	// Cette méthode est pour lire un fichier text télécharger dans le navigateur
-	fileUpload(e) {
-		this.file = e.target.files[0];
-		let fileReader = new FileReader();
-		fileReader.onload = () => {
-		  this.text = fileReader.result as string		  
+
+	places = []
+	confirmLocation(event,id){
+		console.log(id);
+		
+		console.log(event.target.checked);
+		if (event.target.checked){
+			let loc = this.locations.filter(location => {
+				return location.id === parseInt(id)
+			})
+			this.places.push(loc[0])
 		}
-		fileReader.readAsText(this.file);
+		if (!event.target.checked){
+			console.log('unchecked');
+			console.log(id);
+			
+			
+			this.places = this.places.filter(location => location.id !== parseInt(id))
+		}
+
+		// remove markers when unselecting city
+		if (this.markers.length > 0){
+			this.markers.map(marker => this.map.removeLayer(marker))
+		}
+
+		// remove the line when unselecting city
+		if (this.polyline)
+			this.map.removeLayer(this.polyline)
+
+		// Ajouter les markers sur la carte
+		const c = []
+		this.places.map(location => {
+			this.marker = L.marker([location.lat, location.lng],{ icon: this.smallIcon })
+			this.marker.addTo(this.map).bindPopup(`<center><h3>${location.city}</h3><h2>${location.country}</h2></center>`)
+			this.markers.push(this.marker)	
+			let x = location.lat
+			let y = location.lng
+			c.push([x,y])
+		})
+
+		// relier les markers avec une ligne
+		this.polyline = L.polyline(c)
+		this.polyline.addTo(this.map)
+		
+		// Empty input file
+		this.myInputVariable.nativeElement.value = ''
+		this.clearText()
+		console.log(this.places);
+		
 	}
 
-	// Vider le textarea
-	clearText(){
-		this.text = ''
-	}
-
+	
 }

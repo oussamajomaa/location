@@ -18,6 +18,7 @@ import { MatInputModule } from '@angular/material/input';
 import {MatSelectModule} from '@angular/material/select';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatChipsModule } from '@angular/material/chips';
 
 import { MatListModule } from "@angular/material/list";
 import { MatSidenavModule } from "@angular/material/sidenav";
@@ -31,6 +32,8 @@ import { AngularFireModule } from '@angular/fire/compat'
 import { AngularFireAuthModule } from '@angular/fire/compat/auth';
 import { AngularFireDatabaseModule } from '@angular/fire/compat/database';
 import { AngularFireStorageModule } from '@angular/fire/compat/storage';
+import { HashLocationStrategy, LocationStrategy } from '@angular/common';
+import { NotFoundComponent } from './not-found/not-found.component';
 
 
 @NgModule({
@@ -40,6 +43,7 @@ import { AngularFireStorageModule } from '@angular/fire/compat/storage';
     LoginComponent,
     HomeComponent,
     LocationComponent,
+    NotFoundComponent,
   ],
   imports: [
     BrowserModule,
@@ -65,10 +69,10 @@ import { AngularFireStorageModule } from '@angular/fire/compat/storage';
     AngularFireAuthModule,
     AngularFireDatabaseModule,
     AngularFireStorageModule,
-
+    MatChipsModule,
     
   ],
-  providers: [],
+  providers: [{provide: LocationStrategy, useClass: HashLocationStrategy}],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
