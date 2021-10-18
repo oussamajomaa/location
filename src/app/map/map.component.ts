@@ -67,7 +67,6 @@ export class MapComponent implements AfterViewInit {
 			attribution: 'OSM'
 		});
 		mainLayer.addTo(this.map);	
-		L.layerGroup().addTo(this.map)
 		// https://www.youtube.com/watch?v=ax--7KkM_io	
 	}
 
@@ -163,7 +162,14 @@ export class MapComponent implements AfterViewInit {
 	// Vider le textarea
 	clearText(){
 		this.text = ''
-		
+		// if (this.map) this.map.remove()
+		// supprimer les anciens markers
+		if (this.markers.length>0) {
+			this.markers.map(marker => this.map.removeLayer(marker))
+		}
+		this.foundCities = []
+		if (this.polyline)
+			this.map.removeLayer(this.polyline)
 	}
 
 	confirmCity(){
@@ -201,7 +207,7 @@ export class MapComponent implements AfterViewInit {
 		
 		// Empty input file
 		this.myInputVariable.nativeElement.value = ''
-		this.clearText()
+		// this.clearText()
 		
 	}
 
@@ -251,7 +257,7 @@ export class MapComponent implements AfterViewInit {
 		
 		// Empty input file
 		this.myInputVariable.nativeElement.value = ''
-		this.clearText()
+		// this.clearText()
 		console.log(this.places);
 		
 	}

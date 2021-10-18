@@ -7,7 +7,7 @@ import { MapComponent } from './map/map.component';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { AuthGuard } from './services/auth.guard';
 const routes: Routes = [
-  {path:'',pathMatch:'full',redirectTo:'map'},
+  {path:'',pathMatch:'full',redirectTo:'home'},
   {path:'login', component:LoginComponent},
   {path:'home', component:HomeComponent},
   {path:'map', component:MapComponent},
