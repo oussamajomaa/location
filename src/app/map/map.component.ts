@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Component, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import * as L from 'leaflet';
 import { DataService } from '../services/data.service';
+import { MarkerClusterGroup } from 'leaflet';
 
 @Component({
   selector: 'app-map',
@@ -11,7 +12,8 @@ import { DataService } from '../services/data.service';
 export class MapComponent implements AfterViewInit {
 
 	@ViewChild('myInput') myInputVariable: ElementRef;
-
+	markerClusterData=[]
+	clusters:L.MarkerClusterGroup
 	map:any
 	locations = []
 	country=''
@@ -40,7 +42,11 @@ export class MapComponent implements AfterViewInit {
 		shadowSize:  [10, 10]
 	});
 
-	constructor(private dataService:DataService, private http:HttpClient) { }
+	constructor(
+		private dataService:DataService,
+		private http:HttpClient,
+		
+		) { }
 
 	ngAfterViewInit(): void {
 		
@@ -52,7 +58,8 @@ export class MapComponent implements AfterViewInit {
 			this.countries = res
 			
 			this.loading = true
-		})	
+		})
+		
 	}
 
 	createMap(lat,lng,z){
@@ -133,11 +140,33 @@ export class MapComponent implements AfterViewInit {
 		if (this.foundCities.length > 0){
 			this.createMap(this.foundCities[0]['lat'], this.foundCities[0]['lng'],2)
 			this.msg = ''
+
+			// test cluster groupe
+			this.clusters = L.markerClusterGroup({
+				
+			});
+			
+			this.foundCities.map(location =>{
+				this.marker = L.marker([location.lat, location.lng],{ icon: this.smallIcon })
+				this.marker.addTo(this.map).bindPopup(`<center><h3>${location.city}</h3><h2>${location.country}</h2></center>`)
+				this.markers.push(this.marker)
+				this.clusters.addLayer(this.marker)
+				this.map.addLayer(this.clusters)
+				this.map.removeLayer(this.marker)
+			})
+			// Contenir tous les markers sur la carte
+			const group = L.featureGroup(this.markers);
+			this.map.fitBounds(group.getBounds(),{padding:[50,50]});
+
 		}
 		else {
 			this.createMap(0, 0,2)
 			this.msg = "aucune ville ou pays trouvés dans le text"
 		}
+		
+		
+		
+		
 	}
 
 	// Cette méthode est pour lire un fichier text télécharger dans le navigateur
@@ -173,6 +202,8 @@ export class MapComponent implements AfterViewInit {
 	}
 
 	confirmCity(){
+		
+
 		console.log('this.ids',this.ids);
 		
 		// Get ids from location when choosing city and mapping ids array to find every city and push it in cities array
@@ -195,7 +226,8 @@ export class MapComponent implements AfterViewInit {
 		this.cities.map(location => {
 			this.marker = L.marker([location.lat, location.lng],{ icon: this.smallIcon })
 			this.marker.addTo(this.map).bindPopup(`<center><h3>${location.city}</h3><h2>${location.country}</h2></center>`)
-			this.markers.push(this.marker)	
+			this.markers.push(this.marker)
+				
 			let x = location.lat
 			let y = location.lng
 			c.push([x,y])
@@ -214,6 +246,10 @@ export class MapComponent implements AfterViewInit {
 
 	places = []
 	confirmLocation(event,id){
+
+		
+		
+
 		console.log(id);
 		
 		console.log(event.target.checked);
@@ -246,8 +282,10 @@ export class MapComponent implements AfterViewInit {
 			this.marker = L.marker([location.lat, location.lng],{ icon: this.smallIcon })
 			this.marker.addTo(this.map).bindPopup(`<center><h3>${location.city}</h3><h2>${location.country}</h2></center>`)
 			this.markers.push(this.marker)	
+			this.map.setView([location.lat, location.lng],5)
 			let x = location.lat
 			let y = location.lng
+			
 			c.push([x,y])
 		})
 

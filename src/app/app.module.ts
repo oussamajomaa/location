@@ -34,7 +34,7 @@ import { AngularFireDatabaseModule } from '@angular/fire/compat/database';
 import { AngularFireStorageModule } from '@angular/fire/compat/storage';
 import { HashLocationStrategy, LocationStrategy } from '@angular/common';
 import { NotFoundComponent } from './not-found/not-found.component';
-
+import { LeafletMarkerClusterModule } from '@asymmetrik/ngx-leaflet-markercluster';
 
 @NgModule({
   declarations: [
@@ -70,7 +70,8 @@ import { NotFoundComponent } from './not-found/not-found.component';
     AngularFireDatabaseModule,
     AngularFireStorageModule,
     MatChipsModule,
-    
+    LeafletMarkerClusterModule,
+
   ],
   providers: [{provide: LocationStrategy, useClass: HashLocationStrategy}],
   bootstrap: [AppComponent]

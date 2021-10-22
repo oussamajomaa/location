@@ -84,6 +84,22 @@ h3, label{
     margin-right: 10px;
 }
 
+
+.cluster {
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    background-color: #3498db;
+    color: white;
+    text-align: center;
+    font-size: 20px;    
+    line-height: 40px;
+    margin-top: -20px;
+    margin-left: -20px;
+}
+
+
+
 @media (max-width:1000px){
     .enter-text{
         flex-direction: column;
