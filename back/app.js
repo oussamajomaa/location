@@ -14,34 +14,6 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cors())
 app.use('',route)
 
-// const connection = mysql.createPool({
-//     host            : 'localhost',
-//     user            : 'osm',
-//     password        : 'osm',
-//     database        : 'location'
-// })
-
-// app.get('/cities',(req,res)=>{
-//     connection.query('SELECT * from cities', (err,rows)=>{
-//         if (!err) {
-//             res.send(rows)
-//         }
-//         else{
-//             console.log(err)
-//         }
-//     })
-// })
-
-
-
-
-
-const port = process.env.PORT || 5000;
-
-// app.use(express.urlencoded({extended: true})); 
-
-// app.use(express.json());
-
-// app.use('',auth)
+const port = process.env.PORT || 5555;
 
 app.listen(port, () => console.log(`Listening on port ${port}`))

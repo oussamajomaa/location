@@ -1,48 +1,134 @@
-<div>
-	<div *ngIf="!loading" class="spinner"></div>
-	<div class="enter-text">
-		<div class="text-area">
-			<textarea placeholder="Enter the text..." rows="5" [(ngModel)]="text"></textarea>
-			<button (click)="findCityInText()" mat-raised-button color="primary"
-				style="margin-bottom: 10px;">Search</button>
-			<span class="msg">{{msg}}</span>
-			<button (click)="clearText()" mat-raised-button color="accent" style="margin-bottom: 10px;">Clear</button>
+<div *ngIf="!loading" class="spinner"></div>
+<div class="row">
+	<div class="col-3 radio-class pt-3">
+		<div class="row">
+			<div class="col">
+				<div class="d-flex justify-content-around mb-3">
+
+					<label class="primary p-2 rounded" for="saisir_text" >
+						<input type="radio" checked style="margin-right: 5px;" name="optradio" id="saisir_text" mat-raised-button
+							(click)="onSelectTextArea($event)">Saisir un texte</label>
+
+
+					<label class="primary p-2 rounded" for="upload_file">
+						<input type="radio" style="margin-right: 5px;" name="optradio" id="upload_file"
+							(click)="onSelectUploadFile($event)">Uploader un fichier</label>
+
+				</div>
+
+				<div *ngIf="textArea">
+					<textarea placeholder="Enter the text..." rows="5" [(ngModel)]="text" maxlength="8000"
+						class="rounded "></textarea>
+				</div>
+
+				<div class="d-flex justify-content-around align-items-center">
+					<button *ngIf="textArea" (click)="sendToSpacy($event)" mat-raised-button
+						class="primary w-25">Envoyer</button>
+					<button *ngIf="textArea" (click)="clearText()" mat-raised-button
+						class="danger w-25">Annuler</button>
+					<!--<input type="file" accept=".txt,.zip" (change)="fileUpload($event)" #myInput>-->
+					
+
+					<div class="dropzone mat-elevation-z8" *ngIf="uploadFile">
+						<img src="assets/icons/upload.png" width="100" alt="">
+						<input  type="file" accept=".txt,.zip" (change)="sendToSpacy($event)" #myInput class="mt-5" id="fileDropReff">
+										
+						<label for="fileDropReff"> &nbsp;<strong>Cliquez pour téléverser un fichier</strong></label>
+						<h4>Nom du fichier: {{fileName}}</h4>
+						
+					</div>
+						
+				</div>
+				<h4 class="text-center danger rounded my-1 msg">{{msg}}</h4>
+			</div>
 		</div>
+		<div class="row">
+			<div *ngIf="foundCities.length === 0 && fileName !=''" class="spinner"></div>
+			<div class="col py-3 parent-cities" *ngIf="foundCities.length > 0">
 
-		<div class="dropzone">
-			<input type="file" accept=".txt,.zip" id="fileDropRef" (change)="fileUpload($event)" #myInput>
-			<h3>Drag and drop file here or</h3>
-
-			<label for="fileDropRef"> &nbsp;<strong>Browse for file</strong></label>
+				<h2 class="text-center danger mb-2 mat-elevation-z8 rounded" style="display: block; margin:auto;  width:75%">Lieux trouvés</h2>
+				<div  [ngClass]="{'rounded height2' :textArea, 'rounded height1' :!textArea}">
+					<Div *ngFor="let location of foundCities; let i=index">
+						<label for="checkbox{{i}}" class="warning p-2 my-3 rounded mat-elevation-z8" style="display: block; margin:auto;  width:100%; margin-bottom:5px">
+							<input type="checkbox" id="checkbox{{i}}"
+								(click)="confirmLocation($event,location.id)"><span class="ml-1">{{location.city}}
+								{{location.country}}</span>
+						</label>
+					</Div>
+				</div>
+				<button class="primary" mat-raised-button style="display: block; margin:auto;  width:75%"
+					(click)="displayOnMap()">Afficher sur la carte</button>
+			</div>
 		</div>
-
 	</div>
-	<div>
-		<div class="my-2 m-1  p-2  d-flex flex-wrap">
-			<Div *ngFor="let location of foundCities; let i=index" class="bg-warning m-1 p-2" style="border-radius: 20px;">
-				<label for="checkbox{{i}}">
-					<input type="checkbox" id="checkbox{{i}}" (click)="confirmLocation($event,location.id)"><span
-						class="ml-1">{{location.city}} {{location.country}}</span>
-				</label>
-			</Div>
+
+	<!-- <div [ngClass]="{'col-7' :foundCities.length > 0, 'col-9' :foundCities.length === 0}" id="map">
+		<button (click)="displayOnMap()" color="light" mat-mini-fab class="center-button"
+			*ngIf="foundCities.length > 0 ">
+			<mat-icon> my_location</mat-icon>
+		</button>
+	</div> -->
+	<div class="col-9">
+		<div class="row" id="map">
+			<button (click)="displayOnMap()" color="light" mat-mini-fab class="center-button"
+				*ngIf="foundCities.length > 0 ">
+				<mat-icon> my_location</mat-icon>
+			</button>
 		</div>
-
-
-		<mat-form-field class=" mt-3">
-			<mat-label>Choose City (choice multiple)</mat-label>
-			<mat-select (selectionChange)="confirmCity()" multiple [(ngModel)]="ids">
-
-				<mat-option *ngFor="let location of foundCities" value="{{location.id}}">{{location.city}}
-					{{location.country}}</mat-option>
-			</mat-select>
-		</mat-form-field>
-
-		<!--<mat-form-field appearance="fill">
-			<mat-label>Séléctionner un pays</mat-label>
-			<mat-select (selectionChange)="changeCountry()" [(ngModel)]="country">
-				<mat-option *ngFor="let row of countries" value="{{row.country}}">{{row.country}}</mat-option>
-			</mat-select>
-		</mat-form-field>-->
+		<div class="row slider">
+			<div class="col">
+				<div class="slidecontainer ">
+					<input type="range" min="1" max="100" value="50" class="w-75 my-5" id="myRange" >
+				  </div>
+				  <mat-slider aria-label="unit(s)"></mat-slider>
+			</div>
+		</div>
 	</div>
-	<div id="map"></div>
 </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!--<mat-form-field class=" mt-3">
+				<mat-label>Choose City (choice multiple)</mat-label>
+				<mat-select (selectionChange)="confirmCity()" multiple [(ngModel)]="ids">
+	
+					<mat-option *ngFor="let location of foundCities" value="{{location.id}}">{{location.city}}
+						{{location.country}}</mat-option>
+				</mat-select>
+			</mat-form-field>
+	
+			<mat-form-field appearance="fill">
+				<mat-label>Séléctionner un pays</mat-label>
+				<mat-select (selectionChange)="changeCountry()" [(ngModel)]="country">
+					<mat-option *ngFor="let row of countries" value="{{row.country}}">{{row.country}}</mat-option>
+				</mat-select>
+			</mat-form-field>-->

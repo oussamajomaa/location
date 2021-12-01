@@ -2,15 +2,15 @@ const express = require('express')
 const router = express.Router()
 const jwt = require("jsonwebtoken");
 const bcrypt = require('bcrypt');
-const mysql = require('mysql2')
+const mysql = require('./connection')
 
 
-const connection = mysql.createConnection({
-    host            : 'localhost',
-    user            : 'osm',
-    password        : 'osm',
-    database        : 'location'
-})
+// const connection = mysql.createConnection({
+//     host            : 'localhost',
+//     user            : 'osm',
+//     password        : 'osm',
+//     database        : 'location'
+// })
 
 
 
@@ -21,7 +21,7 @@ router.post('/register', verifyToken, (req,res)=>{
             let user = req.body
             bcrypt.hash(user.password, 10, function(err, hash) {
                 user.password = hash
-                connection.query('SELECT * FROM user WHERE email = ?', [user.email], 
+                mysql.query('SELECT * FROM user WHERE email = ?', [user.email], 
                 (err,result)=> {
                     if (result.length){
                         console.log(result)
@@ -31,8 +31,7 @@ router.post('/register', verifyToken, (req,res)=>{
                         })
                     }
                     else{
-                        connection.query('INSERT INTO user SET ?', user, (err, rows) => {
-                            connection.release() // return the connection to connection
+                        mysql.query('INSERT INTO user SET ?', user, (err, rows) => {
                             if (!err) {
                                 res.send({response:`User with the email ${user.email} has been added.`})
                             } else {
@@ -65,7 +64,7 @@ router.post('/login', (req,res)=>{
     let hash
 
     if (email && password) {
-        connection.query('SELECT * FROM user WHERE email = ?', [email], 
+        mysql.query('SELECT * FROM user WHERE email = ?', [email], 
         (error, result, fields)=> {
             if (result.length>0){
                 console.log(result)
@@ -87,7 +86,7 @@ router.post('/login', (req,res)=>{
                         )
                         res.send({token})
                         console.log(token)
-                        connection.query(
+                        mysql.query(
                             `UPDATE user SET last_login = now() WHERE id = '${result[0].id}'`
                             );
                     }
@@ -103,8 +102,7 @@ router.post('/login', (req,res)=>{
 })
 
 router.get('/users', (req, res) => {
-    connection.query('SELECT * from user', (err, rows) => {
-        connection.release()
+    mysql.query('SELECT * from user', (err, rows) => {
         if (!err) {
             res.send(rows)
         } else {
@@ -114,7 +112,7 @@ router.get('/users', (req, res) => {
 })
 
 router.get('/cities',(req,res)=>{
-    connection.query('SELECT * from cities', (err,rows)=>{
+    mysql.query('SELECT * from cities', (err,rows)=>{
         if (!err) res.send(rows)
         else console.log(err)
     })
@@ -122,7 +120,7 @@ router.get('/cities',(req,res)=>{
 
 router.post('/new_location',(req,res)=>{
     // console.log(req.body)
-    // connection.query('INSERT INTO countries SET ?', req.body, (err, rows) => {
+    // mysql.query('INSERT INTO countries SET ?', req.body, (err, rows) => {
     //     if (!err) {
     //         res.send({response:`${req.body.country} has been added.`})
     //     } else {
@@ -132,7 +130,7 @@ router.post('/new_location',(req,res)=>{
 })
 
 router.get('/countries',(req,res) => {
-    connection.query('SELECT * from countries', (err,rows) => {
+    mysql.query('SELECT * from countries', (err,rows) => {
         if (!err) res.send(rows)
         else console.log(err);
     })

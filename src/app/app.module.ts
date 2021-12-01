@@ -22,6 +22,7 @@ import { MatChipsModule } from '@angular/material/chips';
 
 import { MatListModule } from "@angular/material/list";
 import { MatSidenavModule } from "@angular/material/sidenav";
+import {MatSliderModule} from '@angular/material/slider';
 
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { HomeComponent } from './home/home.component';
@@ -32,7 +33,7 @@ import { AngularFireModule } from '@angular/fire/compat'
 import { AngularFireAuthModule } from '@angular/fire/compat/auth';
 import { AngularFireDatabaseModule } from '@angular/fire/compat/database';
 import { AngularFireStorageModule } from '@angular/fire/compat/storage';
-import { HashLocationStrategy, LocationStrategy } from '@angular/common';
+// import { HashLocationStrategy, LocationStrategy } from '@angular/common';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { LeafletMarkerClusterModule } from '@asymmetrik/ngx-leaflet-markercluster';
 
@@ -65,6 +66,7 @@ import { LeafletMarkerClusterModule } from '@asymmetrik/ngx-leaflet-markercluste
     MatToolbarModule,
     MatListModule,
     MatSidenavModule,
+    MatSliderModule,
     AngularFireModule.initializeApp(environment.firebaseConfig),
     AngularFireAuthModule,
     AngularFireDatabaseModule,
@@ -73,7 +75,8 @@ import { LeafletMarkerClusterModule } from '@asymmetrik/ngx-leaflet-markercluste
     LeafletMarkerClusterModule,
 
   ],
-  providers: [{provide: LocationStrategy, useClass: HashLocationStrategy}],
+  // providers: [{provide: LocationStrategy, useClass: HashLocationStrategy}],
+  providers: [],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

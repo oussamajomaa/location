@@ -1,18 +1,22 @@
-<div class="container">
+<div class="container warning">
     <div class="enter-text">
         <div class="text-area">
             <textarea placeholder="Enter the text..." rows="5" [(ngModel)]="text"></textarea>
         </div>
         <div class="dropzone">
-            <input type="file" accept=".txt,.zip" id="fileDropReff" (change)="fileUpload($event)" #myInput>
+            <input type="file" accept=".txt,.zip" id="fileDropReff" (change)="onFileSelected($event)" #myInput>
             <h3>Drag and drop file here or</h3>
     
             <label for="fileDropReff"> &nbsp;<strong>Browse for file</strong></label>
         </div>
     </div>
 
-    <button mat-raised-button color="primary" (click)="getSpacy()" class="m-1">Spacy</button>
+    
+
+    <button mat-raised-button color="primary" (click)="sendText()" class="m-1">Send Text</button>
+    <button mat-raised-button color="primary" (click)="sendFile()" class="m-1">Send File</button>
     <input type="text" placeholder="Enter the address..." class="m-1" [(ngModel)]="address">
-    <button mat-raised-button color="primary" (click)="searchAddress()">Search</button>
+    <button mat-raised-button color="primary" (click)="searchAddress()" class="m-1">Search</button>
+    <button mat-raised-button color="accent" (click)="clearText()" class="m-1">Clear</button>
     <div id="mapAddress"></div>
 </div>
