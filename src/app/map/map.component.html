@@ -31,7 +31,7 @@
 
 					<div class="dropzone mat-elevation-z8" *ngIf="uploadFile">
 						<img src="assets/icons/upload.png" width="100" alt="">
-						<input  type="file" accept=".txt,.zip" (change)="sendToSpacy($event)" #myInput class="mt-5" id="fileDropReff">
+						<input  type="file" accept=".txt,.zip" (change)="sendToSpacy($event)" multiple #myInput class="mt-5" id="fileDropReff">
 										
 						<label for="fileDropReff"> &nbsp;<strong>Cliquez pour téléverser un fichier</strong></label>
 						<h4>Nom du fichier: {{fileName}}</h4>

@@ -53,8 +53,8 @@ import os
 from os.path import join, dirname, realpath
 from flask import Flask, flash, request, redirect, url_for,render_template,abort
 from werkzeug.utils import secure_filename
-import time
-
+import glob
+import zipfile
 
 from flask_cors import CORS, cross_origin
 import json
@@ -96,6 +96,7 @@ def index():
 @app.route('/file', methods=['POST'])
 def process():
     uploaded_file = request.files['file']
+    print("uploaded_file is "+str(uploaded_file) )
     filename = secure_filename(uploaded_file.filename)
     if filename != '':
         file_ext = os.path.splitext(filename)[1]
@@ -105,22 +106,55 @@ def process():
         # save file to folder
         uploaded_file.save(os.path.join(app.config['UPLOAD_PATH'], filename))
 
-        # read file from path folder
-        f = open("/home/osm/Bureau/location/python/uploads/"+filename, "r")
-        contents = f.readlines()
-        # transform list into string
-        contents = " ".join(contents)
-        results = []
-        wikitext = nlp(contents)
-        for word in wikitext.ents:
-            item = {
-                'word':word.text,
-                'label':word.label_
-            }
+        # Get the base of path
+        baseUrl = os.path.dirname(os.path.abspath(__file__))
+        
+        # Test if a zip file and extract all in uploads folder
+        if file_ext == ".zip":
+            print("file_ext ******** " + file_ext)
+            with zipfile.ZipFile(baseUrl+"/uploads/"+filename, 'r') as zip_ref:
+                zip_ref.extractall(baseUrl+"/uploads/")
+            
+            # Assign extracted files in variable array
+            extractedFiles = glob.glob(baseUrl+"/uploads/*.txt")
+            print(extractedFiles)
+            results = []
+            for extractedFile in extractedFiles:
+                print(extractedFile)
+                f = open(extractedFile, "r")
+                contents = f.readlines()
+                contents = " ".join(contents)
+                wikitext = nlp(contents)
+                for word in wikitext.ents:
+                    item = {
+                        'fileName':extractedFile,
+                        'word':word.text,
+                        'label':word.label_
+                    }
+                    results.append(item)
 
-            results.append(item)
-            print(word.text)
-    
+            for extractedFile in extractedFiles:
+                os.remove(extractedFile)
+        
+        if file_ext == ".txt":
+            f = open(baseUrl+"/uploads/"+filename, "r")
+            print(baseUrl)
+            contents = f.readlines()
+            # transform list into string
+            contents = " ".join(contents)
+            results = []
+            wikitext = nlp(contents)
+            for word in wikitext.ents:
+                item = {
+                    'fileName':filename,
+                    'word':word.text,
+                    'label':word.label_
+                }
+
+                results.append(item)
+                print(word.text)
+
+        os.remove(baseUrl+"/uploads/"+filename)
     return json.dumps(results)
     
     # return json.dumps(contents)

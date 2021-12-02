@@ -201,15 +201,25 @@ export class MapComponent implements AfterViewInit {
 					this.spacyList = res.filter(entity => {
 						return entity.label === "LOC"
 					})
+
+
+					this.spacyList = this.spacyList.map(item => {
+						let splitUrl = item.fileName.split("/")
+						item.fileName = splitUrl[splitUrl.length-1]
+						return item
+					})
+
 					console.log(this.spacyList)
+
+					
 					// Get location name only
-					this.spacyList = this.spacyList.map(entity => {
+					const spacyLoc = this.spacyList.map(entity => {
 						return entity.word
 					})
 					console.log('this.spacyList ', this.spacyList)
 
 					// convert list to string
-					this.spacyText = this.spacyList.toString()
+					this.spacyText = spacyLoc.toString()
 					console.log('this.spacyText ', this.spacyText);
 					if (this.spacyText != "") {
 						console.log('spacy text la toussawi farag');
@@ -272,7 +282,7 @@ export class MapComponent implements AfterViewInit {
 	displayOnMap() {
 		this.places.map(location => {
 			// return location.occurence = this.wordList.filter(word => word === location.city).length
-			return location.occurence = this.spacyList.filter(word => word.match("\\b" + location.city + "\\b")).length
+			return location.occurence = this.spacyList.filter(item => item.word.match("\\b" + location.city + "\\b")).length
 		})
 
 
