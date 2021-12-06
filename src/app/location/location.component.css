@@ -1,81 +1,29 @@
 
-.spinner{
-  border: 16px solid silver;
-  border-top: 16px solid #337AB7;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  animation: spin 700ms linear infinite;
-  /* top:50%;
-  left: 50%;
-  position: absolute; */
-  z-index: 100;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg)}
-  100% { transform: rotate(-360deg);}
+h3{
+  padding: 0;
+  margin: 0;
 }
 
 .title{
   font-weight: bolder;
 }
 
-#mapLocation{
-  width: 60vw;
-  height: 60vh;
-  margin-bottom: 15px;
-  position: relative;
-}
 
-.click{
+
+/* .spinner{
+  border: 16px solid silver;
+  border-top: 16px solid #337AB7;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 700ms linear infinite;
+  top:50%;
+  left: 50%;
   position: absolute;
-  top: -5px;
-  left: 5px;
-  z-index: 1000;
-
+  z-index: 100;
 }
 
-
-.location{
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-around;
-}
-
-.form{
-  display: flex;
-  flex-direction: column;
-}
-
-@media (max-width:1000px) {
-  #mapLocation{
-    width: 99vw;
-    /* height: 100vh; */
-  }
-
-
-
-  .form-input{
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-around;
-  }
-
-  mat-form-field{
-    margin: 10px;
-  }
-
-  .submit,.title{
-    margin: 10px;
-  }
-
-}
-
-@media (max-width:768){
-
-}
-
-
-
-
+@keyframes spin {
+  0% { transform: rotate(0deg)}
+  100% { transform: rotate(-360deg);}
+} */

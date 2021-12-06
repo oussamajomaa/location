@@ -12,23 +12,26 @@
     z-index: 100;
 }
 
-.radio-class{
-    height: 95vh;
+.content{
+    height: 93vh;
+    padding-left: 15px;
+    padding-right: 18px;
+    padding-top: 15px;
 }
 
 
 .height1{
     height: 40vh;
     overflow-y: scroll;
-    width: 75%;
+    width: 100%;
     margin: auto;
     margin-bottom: 10px;
 }
 
 .height2{
-    height: 45vh;
+    height: 40vh;
     overflow-y: scroll;
-    width: 75%;
+    width: 100%;
     margin: auto;
     margin-bottom: 10px;
 
@@ -42,16 +45,12 @@
   }
 
 .slider{
-
-    border-bottom: silver 10px solid;
-    border-left: silver 10px solid;
-    border-right: silver 10px solid;
-    height: 20vh;
+    height: 15vh;
 }
 
 .dropzone{
     width: 100% ;
-    height: 20vh;
+    height: 25vh;
     position: relative;
     /* border: solid 1px black; */
     display: flex;
@@ -60,6 +59,16 @@
     align-items: center;
 
     margin-bottom: 10px;
+    
+  }
+
+  .dropzone img{
+      width: 100px;
+  }
+
+  .textArea{
+      width: 100%;
+      height: 25vh;
   }
 
   input[type='radio']:checked:after {
@@ -76,16 +85,19 @@
 }
 
 
+
 #fileDropReff{
     opacity: 0;
     position: absolute;
     z-index: 2;
     width: 80%;
-    height: 100%;
+    height: 5vh;
     top: 0;
     left: 0;
     cursor: pointer;
   }
+
+
 
 @keyframes spin {
     0% { transform: rotate(0deg)}
@@ -95,14 +107,14 @@
 
 #map {
     position: relative;
-    border: silver 10px solid;
-    height: 71vh;
+    border: #17A2B8 1px solid;
+    height: 78vh;
   }
 
 .center-button{
     position: absolute;
-    top: 80px;
-    left: 6px;
+    top: 6px;
+    right: 6px;
     z-index: 1000;
 }
 
@@ -111,7 +123,7 @@ textarea
 {
     width:100%;
     padding:10px; 
-    height:15vh;
+    height:18vh;
     border: none;
     box-shadow: rgba(255, 255, 255, 0.2) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0.9) 0px 0px 0px 1px;
     margin-bottom: 10px;
@@ -123,10 +135,25 @@ h3, h2, label{
 }
 
 
+.number-icon
+{
+    width: 24px !important;
+  height: 24px !important;
+  margin-left: -12px;
+  margin-top: -12px;
+  border-radius: 18px;
+  border: 2px solid #3F51B5;
+  text-align: center;
+  color: #3F51B5;
+  background-color: rgb(255, 0, 0);
+  font-size: 16px;  
+  z-index: 10000;
+}
 
 
 
-@media (max-width:1000px){
+
+/* @media (max-width:1000px){
     .enter-text{
         flex-direction: column;
     }
@@ -145,5 +172,5 @@ h3, h2, label{
         flex-direction: row;
         margin-bottom: 10px;
     }
-}
+} */
 

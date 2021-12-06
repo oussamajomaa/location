@@ -3,7 +3,6 @@ import { AfterViewInit, Component } from '@angular/core';
 import { DataService } from '../services/data.service';
 import * as L from 'leaflet';
 
-
 @Component({
   selector: 'app-location',
   templateUrl: './location.component.html',
@@ -14,44 +13,52 @@ export class LocationComponent implements AfterViewInit {
 	countries = []
 	cities = []
 	loading=false
-	country:string=''
-	city:string=''
+	country=''
+	city=''
 	lat:number
 	lng:number
 	map:any
 	id_country:number
+	geojson: any
 
 	constructor(private dataService:DataService, private http:HttpClient) { }
 
 	ngAfterViewInit(): void {
-		this.createMap()
-		this.map.on("click", e => {
-			this.lat = e.latlng.lat
-			this.lng = e.latlng.lng
-			console.log(e.latlng.lat);
-		});
 		this.dataService.getCountries()
 		.subscribe((res:any) => {
 			this.countries = res
 			this.loading = true
-
-			// this.countries.map(res => {
-			// 	this.http.post('http://localhost:5000/modify',res)
-			// 	.subscribe(response => console.log(response))
-			// })
 		})	
-		
+
 		
 	}
 
-	createMap(){
-		this.map = L.map('mapLocation').setView([0,0],3);
-		const mainLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-			minZoom: 1,
-			maxZoom: 20,
-			attribution: 'OSM'
-		});
-		mainLayer.addTo(this.map);	
+	onAddLocation(){
+		console.log('hello');
+		
+		const location = {
+			country:this.country,
+			city:this.city,
+			lat:this.lat,
+			lng:this.lng,
+			id_country:this.id_country
+		}
+		this.locations.push(location)
+		this.country=null
+		this.city=null
+		this.lat=null
+		this.lng=null
+		console.log(this.locations);
+		
+	}
+
+	removeCity(city){
+		console.log(city);
+		
+		this.locations = this.locations.filter(location => {
+			return location.city != city
+			// return location
+		})
 	}
 
 	onSubmit(){
@@ -64,13 +71,8 @@ export class LocationComponent implements AfterViewInit {
 			
 		}
 		console.log(location);
-		
 	}
 
-	onChangeCountry(event){
-		this.id_country = event.value
-		console.log(this.id_country);
-		
-	}
+	
 
 }

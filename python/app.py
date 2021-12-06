@@ -50,7 +50,7 @@
 # 	app.run(debug=True)
 
 import os
-from os.path import join, dirname, realpath
+# from os.path import join, dirname, realpath
 from flask import Flask, flash, request, redirect, url_for,render_template,abort
 from werkzeug.utils import secure_filename
 import glob
@@ -58,11 +58,10 @@ import zipfile
 
 from flask_cors import CORS, cross_origin
 import json
-import spacy
-from spacy.lang.fr.examples import sentences 
-#from spacy import displacy
+# import spacy
 
 # nlp = spacy.load("fr_core_news_sm")
+from spacy.lang.fr.examples import sentences 
 import fr_core_news_md
 
 nlp = fr_core_news_md.load()
@@ -82,13 +81,13 @@ def index():
     wikitext = nlp(request.args.get('text'))
     for word in wikitext.ents:
         item = {
-            'word':word.text,
+            'city':word.text,
             'label':word.label_
         }
-
-        results.append(item)
-        print(word.text)
-    
+        if word.label_ == "LOC":
+            results.append(item)
+            print(word.text)
+        print(results)
     return json.dumps(results)
 
 
@@ -128,10 +127,13 @@ def process():
                 for word in wikitext.ents:
                     item = {
                         'fileName':extractedFile,
-                        'word':word.text,
+                        'city':word.text,
                         'label':word.label_
                     }
-                    results.append(item)
+                    
+                    if word.label_ == "LOC":
+                        results.append(item)
+                        print(word.text)
 
             for extractedFile in extractedFiles:
                 os.remove(extractedFile)
@@ -147,38 +149,18 @@ def process():
             for word in wikitext.ents:
                 item = {
                     'fileName':filename,
-                    'word':word.text,
+                    'city':word.text,
                     'label':word.label_
                 }
 
-                results.append(item)
-                print(word.text)
+                if word.label_ == "LOC":
+                    results.append(item)
+                    print(word.text)
+
 
         os.remove(baseUrl+"/uploads/"+filename)
     return json.dumps(results)
     
-    # return json.dumps(contents)
-
-
-@app.route('/read')
-def readFile():
-    
-    f = open("/home/osm/Bureau/location/python/uploads/test.txt", "r")
-    contents = f.readlines()
-    print(f.readlines())
-    print(contents)
-    contents = " ".join(contents)
-    return json.dumps(contents)
-        
-
-
-
-
-
-     
-       
-
-
 
 
 if __name__ == '__main__':

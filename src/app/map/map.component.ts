@@ -3,7 +3,11 @@ import { Component, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import * as L from 'leaflet';
 import { DataService } from '../services/data.service';
 import { environment } from 'src/environments/environment';
-
+import { OpenStreetMapProvider, GeoSearchControl } from 'leaflet-geosearch';
+const provider = new OpenStreetMapProvider();
+const searchControl = GeoSearchControl({
+	provider: provider,
+});
 
 @Component({
 	selector: 'app-map',
@@ -27,6 +31,9 @@ export class MapComponent implements AfterViewInit {
 	geojson: any
 	text: string
 	foundCities = []
+	notFoundCities = []
+	duplicatedCities = []
+	notDuplicatedCities = []
 	foundCountries = []
 	file: any;
 	msg: string
@@ -42,7 +49,11 @@ export class MapComponent implements AfterViewInit {
 	mainLayer:any
 	uploadFile: boolean
 	textArea: boolean = true
-
+	groupeByList:any
+	listOfText= []
+	textSelected=""
+	allCities = []
+	onCenter = false
 	constructor(
 		private dataService: DataService,
 		private http: HttpClient,
@@ -72,7 +83,7 @@ export class MapComponent implements AfterViewInit {
 			attribution: 'OSM'
 		});
 		this.mainLayer.addTo(this.map);
-		// https://www.youtube.com/watch?v=ax--7KkM_io	
+		this.map.addControl(searchControl);	
 	}
 
 
@@ -97,7 +108,6 @@ export class MapComponent implements AfterViewInit {
 			this.uploadFile = false
 		}
 		this.clearText()
-
 	}
 
 	onSelectUploadFile(e) {
@@ -112,11 +122,17 @@ export class MapComponent implements AfterViewInit {
 
 	// Vider le textarea
 	clearText() {
+		this.duplicatedCities = []
+		this.notFoundCities = []
 		this.foundCities = []
+		this.notDuplicatedCities = []
 		this.places = []
+		this.allCities = []
+		this.listOfText = []
 		this.text = ''
 		this.msg = ""
 		this.fileName = ""
+		this.rangevalue = 0
 		// supprimer les anciens markers
 		if (this.markers.length > 0) {
 			this.markers.map(marker => this.map.removeLayer(marker))
@@ -127,68 +143,101 @@ export class MapComponent implements AfterViewInit {
 	}
 
 	sendToSpacy(event) {
-		// this.foundCities = []
-		// this.places = []
 		if (this.textArea) {
-			if (this.text) {
+			if (this.text != "") {
 				this.http.get(`${environment.url_py}/text`, { params: { text: this.text } }).subscribe((res: any) => {
-					// Filter location only
-					this.spacyList = res.filter(entity => {
-						return entity.label === "LOC"
-					})
-					console.log(this.spacyList)
+					this.spacyList = res
+					console.log('response text ',res)
 					// Get location name only
-					this.spacyList = this.spacyList.map(entity => {
-						return entity.word
+					const spacyLoc = this.spacyList.map(entity => {
+						return entity.city
 					})
-					console.log('this.spacyList ', this.spacyList)
 
 					// convert list to string
-					this.spacyText = this.spacyList.toString()
+					this.spacyText = spacyLoc.toString()
 					console.log('this.spacyText ', this.spacyText);
 					if (this.spacyText != "") {
-						console.log('spacy text la toussawi farag');
-
 						this.locations.map(location => {
 							// Chercher une ville dans text
 							let cityRegex = new RegExp("\\b" + location.city + "\\b")
-							// Chercher un pays dans text
-							let countryRegex = new RegExp("\\b" + location.country + "\\b")
 							if (this.spacyText.match(new RegExp(cityRegex, 'g'))) {
 								this.foundCities.push(location)
-							}
-							// if (this.spacyText.match(new RegExp(countryRegex, 'g'))) {
-							// 	if (!this.foundCountries.find(country => location.country === country))
-							// 		this.foundCountries.push(location.country)
-							// }
+							}		
 						})
 					}
-					//Call the method geoJson to hilight country
-					// this.foundCountries.map(country => {
-					// 	this.geoJson('assets/data/countries.json', country)
-					// })
-					if (this.map) this.map.remove()
 
-					if (this.markers.length > 0) {
-						this.markers.map(marker => this.map.removeLayer(marker))
-					}
+					this.spacyList.map(item => {
+						if (!this.foundCities.find(location => location.city === item.city)) this.notFoundCities.push(item)
+					})
+					console.log("this.notFoundCities ",this.notFoundCities)
 
-					if (this.foundCities.length > 0) {
-						this.createMap(0, 0, 2)
+					// ####################################################
+					// récupérer les lieux dupliqués
+					let ids = {}
+					let repeatedCities = []
+					this.foundCities.forEach((val) => {
+						if (ids[val.city]) {
+							repeatedCities.push(val.city)
+						} 
+						else {
+							ids[val.city] = true
+						}
+					})
+
+					this.foundCities.map(location => {
+						if (!repeatedCities.find(city => city === location.city )){
+							this.notDuplicatedCities.push(location)
+						}
+						else this.duplicatedCities.push(location)
+					})
+
+					console.log('this.duplicatedCities ' ,this.duplicatedCities)
+					console.log('this.not duplicatedCities ' ,this.notDuplicatedCities)
+
+					// ####################################################
+
+					if (this.notDuplicatedCities.length > 0) {
+
 						this.clusters = L.markerClusterGroup({
 						});
+						this.places = this.notDuplicatedCities
+						this.displayOnMap()
 					}
-					else {
-						this.createMap(0, 0, 2)
-						this.msg = "Aucun lieu trouvé !!!"
-					}
+
+					this.spacyList.forEach(item => {
+						this.foundCities.forEach(location => {
+							if (item.city === location.city) {
+								item.lat = location.lat
+								item.lng = location.lng
+								item.country = location.country
+								this.allCities.push(item)
+							}
+						})
+					})
+					
+					// if (this.map) this.map.remove()
+
+					// if (this.markers.length > 0) {
+					// 	this.markers.map(marker => this.map.removeLayer(marker))
+					// }
+
+					// if (this.foundCities.length > 0) {
+					// 	this.createMap(0, 0, 2)
+					// 	this.clusters = L.markerClusterGroup({
+					// 	});
+					// }
+					// else {
+					// 	this.createMap(0, 0, 2)
+					// 	this.msg = "Aucun lieu trouvé !!!"
+					// }
 				})
 			}
 		}
 
 		if (this.uploadFile) {
+			this.clearText()
 			const file: File = event.target.files[0];
-			console.log('file ', file)
+			// console.log('file ', file)
 			if (file) {
 				this.fileName = file.name
 				const formData = new FormData();
@@ -197,66 +246,110 @@ export class MapComponent implements AfterViewInit {
 
 				// Send file to Spacy and get response
 				this.http.post(`${environment.url_py}/file`, formData).subscribe((res: any) => {
-					// Filter location only
-					this.spacyList = res.filter(entity => {
-						return entity.label === "LOC"
-					})
-
-
+					this.spacyList = res
+					console.log('this.spacyList is ',this.spacyList)
 					this.spacyList = this.spacyList.map(item => {
 						let splitUrl = item.fileName.split("/")
 						item.fileName = splitUrl[splitUrl.length-1]
 						return item
 					})
 
-					console.log(this.spacyList)
 
+					this.groupeByList = this.groupBy(this.spacyList,item => item.fileName)
+					console.log("this.groupeByList is ",this.groupeByList)
+					
+					for (let key of this.groupeByList) {
+						this.listOfText.push(key[0])
+					}
+					console.log("listOfText    **** ++++ *** ",this.listOfText);
 					
 					// Get location name only
 					const spacyLoc = this.spacyList.map(entity => {
-						return entity.word
+						return entity.city
 					})
-					console.log('this.spacyList ', this.spacyList)
 
 					// convert list to string
+					this.foundCities = []
 					this.spacyText = spacyLoc.toString()
 					console.log('this.spacyText ', this.spacyText);
 					if (this.spacyText != "") {
-						console.log('spacy text la toussawi farag');
-
 						this.locations.map(location => {
 							// Chercher une ville dans text
 							let cityRegex = new RegExp("\\b" + location.city + "\\b")
-							// Chercher un pays dans text
-							let countryRegex = new RegExp("\\b" + location.country + "\\b")
 							if (this.spacyText.match(new RegExp(cityRegex, 'g'))) {
 								this.foundCities.push(location)
 							}
-							// if (this.spacyText.match(new RegExp(countryRegex, 'g'))) {
-							// 	if (!this.foundCountries.find(country => location.country === country))
-							// 		this.foundCountries.push(location.country)
-							// }
 						})
 					}
-					//Call the method geoJson to hilight country
-					// this.foundCountries.map(country => {
-					// 	this.geoJson('assets/data/countries.json', country)
-					// })
-					if (this.map) this.map.remove()
 
-					if (this.markers.length > 0) {
-						this.markers.map(marker => this.map.removeLayer(marker))
-					}
+					console.log("the found citiesis ", this.foundCities);
+					// séparer les lieux trouvés de ceux non trouvés
+					this.spacyList.map(item => {
+						if (!this.foundCities.find(location => location.city === item.city)) this.notFoundCities.push(item)
+					})
+					console.log("this.notFoundCities ",this.notFoundCities)
 
-					if (this.foundCities.length > 0) {
-						this.createMap(0, 0, 2)
+					// ####################################################
+					// récupérer les lieux dupliqués
+					let ids = {}
+					let repeatedCities = []
+					this.foundCities.forEach((val) => {
+						if (ids[val.city]) {
+							repeatedCities.push(val.city)
+						} 
+						else {
+							ids[val.city] = true
+						}
+					})
+
+					this.foundCities.map(location => {
+						if (!repeatedCities.find(city => city === location.city )){
+							this.notDuplicatedCities.push(location)
+						}
+						else this.duplicatedCities.push(location)
+					})
+
+					console.log('this.duplicatedCities ' ,this.duplicatedCities)
+					console.log('this.not duplicatedCities ' ,this.notDuplicatedCities)
+
+					// ####################################################
+
+					if (this.notDuplicatedCities.length > 0) {
+
 						this.clusters = L.markerClusterGroup({
 						});
+						this.places = this.notDuplicatedCities
+						this.displayOnMap()
 					}
-					else {
-						this.createMap(0, 0, 2)
-						this.msg = "Aucun lieu trouvé !!!"
-					}
+
+					this.spacyList.forEach(item => {
+						this.foundCities.forEach(location => {
+							if (item.city === location.city) {
+								item.lat = location.lat
+								item.lng = location.lng
+								item.country = location.country
+								this.allCities.push(item)
+							}
+						})
+					})
+					console.log('all cities with text', this.allCities);
+					
+					
+					// if (this.map) this.map.remove()
+
+					// if (this.markers.length > 0) {
+					// 	this.markers.map(marker => this.map.removeLayer(marker))
+					// }
+
+					// if (this.foundCities.length > 0) {
+					// 	this.createMap(0, 0, 2)
+					// 	this.clusters = L.markerClusterGroup({
+					// 	});
+					// }
+					// else {
+					// 	this.createMap(0, 0, 2)
+					// 	this.msg = "Aucun lieu trouvé !!!"
+					// }
 				})
 			}
 
@@ -264,8 +357,9 @@ export class MapComponent implements AfterViewInit {
 	}
 
 	confirmLocation(event, id) {
-		console.log('', id);
-		console.log(event.target.checked);
+		this.onCenter = false
+		// console.log('', id);
+		// console.log(event.target.checked);
 		if (event.target.checked) {
 			let loc = this.locations.filter(location => {
 				return location.id === parseInt(id)
@@ -273,26 +367,84 @@ export class MapComponent implements AfterViewInit {
 			this.places.push(loc[0])
 		}
 		if (!event.target.checked) {
-			console.log('unchecked');
-			console.log(id);
+			// console.log('unchecked');
+			// console.log(id);
 			this.places = this.places.filter(location => location.id !== parseInt(id))
 		}
 	}
 
 	displayOnMap() {
+		// console.log("this.places",this.places);
+		// console.log("this.spacyList",this.spacyList);
+		// console.log("this.allCities",this.allCities)
+		
+		
 		this.places.map(location => {
 			// return location.occurence = this.wordList.filter(word => word === location.city).length
-			return location.occurence = this.spacyList.filter(item => item.word.match("\\b" + location.city + "\\b")).length
+			return location.occurence = this.spacyList.filter(item => item.city.match("\\b" + location.city + "\\b")).length
 		})
 
 
-		console.log(this.places);
+		console.log("this.places  ",this.places);
 
 		this.markers = []
 		this.clusters.clearLayers()
 		// this.map.removeLayer(this.clusters)
-		let tempMarker
-		this.places.map(location => {
+	
+		this.getMarkers(this.places)
+		
+	}
+
+
+	// Cette methode va regrouper la liste selon le nom du fichier
+	groupBy(list, keyGetter) {
+		const map = new Map();
+		list.forEach((item) => {
+			 const key = keyGetter(item);
+			 const collection = map.get(key);
+			 if (!collection) {
+				 map.set(key, [item]);
+			 } else {
+				 collection.push(item);
+			 }
+		});
+		return map;
+	}
+
+	//  Cette methode pour recentrer la carte selon les markers en cliquant sur le bouton centrer
+	onSelectText(text){
+		this.onCenter = true
+		this.textSelected = text
+		
+		let arr = []
+		this.allCities.filter(place => {
+			if (place.fileName === this.textSelected) arr.push(place)
+			
+		})
+		console.log(arr);
+
+		arr.map(location => {
+			// return location.occurence = this.wordList.filter(word => word === location.city).length
+			return location.occurence = this.spacyList.filter(item => item.city.match("\\b" + location.city + "\\b")).length
+		})
+
+
+		console.log("this.places  ",arr);
+
+		this.markers = []
+		this.clusters.clearLayers()
+		// this.map.removeLayer(this.clusters)
+	
+		this.getMarkers(arr)
+		
+	}
+
+	// Cette methode est pour ajouter les markers sur la carte
+	getMarkers(arr:any){
+		let iconSize
+		arr.map(location => {
+			if (this.onCenter) iconSize = 20
+			else iconSize = 20 + location.occurence
 			this.marker = L.marker([location.lat, location.lng],
 				{
 					icon: new L.Icon(
@@ -300,15 +452,17 @@ export class MapComponent implements AfterViewInit {
 							iconUrl: 'assets/icons/circle_blue.png',
 							// iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-icon.png',
 							iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-icon-2x.png',
-							iconSize: [20 + location.occurence, 20 + location.occurence],
+							iconSize: [iconSize ,iconSize ],
 							iconAnchor: [6, 10],
 							popupAnchor: [5, -10],
+							html:"<h1>hello</h1>",
 						}
-					)
+					),
+					
 				}
 			)
 
-			this.marker.bindPopup(`<center><h3>${location.city}</h3><h2>${location.country}</h2></center>`)
+			this.marker.bindPopup(`<center><span>${location.city}</span><span> - </span><span>${location.country}</span></center><br><center><span>- ${location.occurence} -</span></center>`)
 			this.markers.push(this.marker)
 			// this.map.setView([location.lat, location.lng],5)
 			this.clusters.addLayer(this.marker)
@@ -321,29 +475,15 @@ export class MapComponent implements AfterViewInit {
 			console.log(this.bounds);
 			this.map.fitBounds(this.bounds.getBounds(), { padding: [0, 0] });
 		}
-		// if (this.markers.length === 1) {
-		// 	let tempMarker  = L.marker([this.places[0].lat-0.01, this.places[0].lng-0.01],
-		// 		{
-		// 			icon: new L.Icon(
-		// 				{
-		// 					iconUrl: 'assets/icons/circle_blue.png',
-		// 					// iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-icon.png',
-		// 					iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-icon-2x.png',
-		// 					iconSize: [0.1, 0.1],
-		// 					iconAnchor: [6, 10],
-		// 					popupAnchor: [5, -10],
-		// 				}
-		// 			)
-		// 		}
-		// 	)
-		// 	this.clusters.addLayer(tempMarker)
-		// 	this.map.addLayer(this.clusters)
-		// 	this.markers.push(tempMarker)
-		// 	this.bounds = L.featureGroup(this.markers);
-		// 	this.map.fitBounds(this.bounds.getBounds(), { padding: [50, 50] });
-		// }
+	}
 
-
+	rangevalue = 0;
+	onMoveSlider(value){
+		// this.rangevalue = event.target.value;
+		this.rangevalue = value
+		console.log(value);
+		this.onSelectText(this.listOfText[this.rangevalue-1])
+		
 	}
 
 }
@@ -367,6 +507,67 @@ export class MapComponent implements AfterViewInit {
 
 	// ##################################################################
 
+
+// arr.map(location => {
+		// 	this.marker = L.marker([location.lat, location.lng],
+		// 		{
+		// 			icon: new L.Icon(
+		// 				{
+		// 					iconUrl: 'assets/icons/circle_blue.png',
+		// 					// iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-icon.png',
+		// 					iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-icon-2x.png',
+		// 					iconSize: [20 , 20 ],
+		// 					iconAnchor: [6, 10],
+		// 					popupAnchor: [5, -10],
+		// 				}
+		// 			)
+		// 		}
+		// 	)
+
+		// 	this.marker.bindPopup(`<center><span>${location.word}</span><span>--</span><span>${location.country}</span></center>`)
+		// 	this.markers.push(this.marker)
+		// 	// this.map.setView([location.lat, location.lng],5)
+		// 	this.clusters.addLayer(this.marker)
+		// 	this.map.addLayer(this.clusters)
+		// })
+		// // Contenir tous les markers sur la carte
+		// if (this.markers.length > 1) {
+		// 	console.log(this.places);
+		// 	this.bounds = L.featureGroup(this.markers);
+		// 	console.log(this.bounds);
+		// 	this.map.fitBounds(this.bounds.getBounds(), { padding: [0, 0] });
+		// }
+
+// this.places.map(location => {
+		// 	this.marker = L.marker([location.lat, location.lng],
+		// 		{
+		// 			icon: new L.Icon(
+		// 				{
+		// 					iconUrl: 'assets/icons/circle_blue.png',
+		// 					// iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-icon.png',
+		// 					iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-icon-2x.png',
+		// 					// iconSize: [20 + location.occurence, 20 + location.occurence],
+		// 					iconSize: [20 , 20],
+		// 					iconAnchor: [6, 10],
+		// 					popupAnchor: [5, -10],
+		// 				}
+		// 			)
+		// 		}
+		// 	)
+
+		// 	this.marker.bindPopup(`<center><span>${location.city}</span><span>--</span><span>${location.country}</span></center>`)
+		// 	this.markers.push(this.marker)
+		// 	// this.map.setView([location.lat, location.lng],5)
+		// 	this.clusters.addLayer(this.marker)
+		// 	this.map.addLayer(this.clusters)
+		// })
+		// // Contenir tous les markers sur la carte
+		// if (this.markers.length > 1) {
+		// 	console.log(this.places);
+		// 	this.bounds = L.featureGroup(this.markers);
+		// 	console.log(this.bounds);
+		// 	this.map.fitBounds(this.bounds.getBounds(), { padding: [0, 0] });
+		// }
 
 // onUploadFile(event) {
 	// 	this.foundCities = []

@@ -32,7 +32,7 @@ export class HomeComponent implements AfterViewInit {
 	text: string
 	places = []
 	fileName = '';
-	
+
 	smallIcon = new L.Icon({
 		iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-icon.png',
 		iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-icon-2x.png',
@@ -43,14 +43,19 @@ export class HomeComponent implements AfterViewInit {
 		shadowSize: [10, 10]
 	});
 
+	
+
 	constructor(
 		private http: HttpClient,
-		private dataService:DataService
-		) { }
+		private dataService: DataService
+	) { }
 
 	ngAfterViewInit(): void {
 		this.createMap()
+		
 	}
+
+	
 
 	createMap() {
 		this.map = L.map('mapAddress').setView([0, 0], 3);
@@ -103,27 +108,27 @@ export class HomeComponent implements AfterViewInit {
 		L.control.layers(baseMaps).addTo(this.map)
 
 
-		const GeocoderControl = new Geocoder();
+		// const GeocoderControl = new Geocoder();
 		// GeocoderControl.addTo(this.map);
-		GeocoderControl.on('markgeocode', function (e) {
-			console.log(e)
-		})
+		// GeocoderControl.on('markgeocode', function (e) {
+		// 	console.log(e)
+		// })
 		// const geocoder = new Geocoder()
 		// geocoder.addTo(this.map)
-		// this.map.addControl(searchControl);
+		this.map.addControl(searchControl);
 
 	}
 
-	async findPlace(places:[{word:"",label:""}]){
+	async findPlace(places: [{ word: "", label: "" }]) {
 		if (places.length > 0) {
-			places.map(place =>{
+			places.map(place => {
 				provider.search({ query: place.word })
-				.then(res => {
-					console.log('res**  ',res)
-					res.map(r => this.places.push(r))
-					this.places.push(res)
+					.then(res => {
+						console.log('res**  ', res)
+						res.map(r => this.places.push(r))
+						this.places.push(res)
 
-				})
+					})
 				// console.log('results  ',results);
 			})
 		}
@@ -142,7 +147,7 @@ export class HomeComponent implements AfterViewInit {
 		// search
 		if (this.address) {
 			const results = await provider.search({ query: this.address });
-			console.log('results',results);
+			console.log('results', results);
 
 			// results.map(location => {
 			// 	let place = {
@@ -156,38 +161,38 @@ export class HomeComponent implements AfterViewInit {
 			// 	this.markers.push(this.marker)
 
 			// })
-			
-			
+
+
 			// if (this.markers.length > 0) {
 			// 	const group = L.featureGroup(this.markers);
 			// 	this.map.fitBounds(group.getBounds(), { padding: [50, 50] });
 			// }
 
 		}
-		console.log('places **',this.places);
-		console.log('markers ',this.markers);
+		console.log('places **', this.places);
+		console.log('markers ', this.markers);
 	}
 
-	
-	locations:any = []
+
+	locations: any = []
 	sendText() {
 		this.http.get(`${environment.url_py}/text`, { params: { text: this.text } })
-		.subscribe((res:any) => {
-			this.locations = res
-			
-			this.locations = res.filter(location => {
-				return location.label ==='LOC'
-				
+			.subscribe((res: any) => {
+				this.locations = res
+
+				this.locations = res.filter(location => {
+					return location.label === 'LOC'
+
+				})
+				console.log(this.locations);
+				// this.findPlace(this.locations)	
 			})
-			console.log(this.locations);
-			// this.findPlace(this.locations)	
-		})
 	}
 
-	sendFile(){
-		if (this.file){
+	sendFile() {
+		if (this.file) {
 			const formData = new FormData()
-			formData.append('file',this.file,this.file.name)
+			formData.append('file', this.file, this.file.name)
 			this.dataService.sendFile(formData).subscribe(res => console.log('sent success'))
 		}
 	}
@@ -210,25 +215,25 @@ export class HomeComponent implements AfterViewInit {
 	// 	return new Blob([new Uint8Array(array)], { type: 'text' });
 	// }
 
-	
+
 	onFileSelected(event) {
-        const file:File = event.target.files[0];
-        if (file) {
-            this.fileName = file.name;
-            const formData = new FormData();
+		const file: File = event.target.files[0];
+		if (file) {
+			this.fileName = file.name;
+			const formData = new FormData();
 			formData.append("name", file.name);
-            formData.append("file", file,file.name);
-			this.http.post(`${environment.url_py}/file`, formData).subscribe((res:any)=>{
+			formData.append("file", file, file.name);
+			this.http.post(`${environment.url_py}/file`, formData).subscribe((res: any) => {
 
 				console.log(res)
 			})
-        }
-    }
+		}
+	}
 
-	clearText(){
+	clearText() {
 		this.text = ""
 	}
 
-	
+
 
 }

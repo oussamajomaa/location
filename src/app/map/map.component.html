@@ -1,86 +1,110 @@
 <div *ngIf="!loading" class="spinner"></div>
-<div class="row">
-	<div class="col-3 radio-class pt-3">
-		<div class="row">
+<div class="row content " style="background: #cfcfcf;">
+	<div class="col-3  p-2">
+		<div class="row inputs">
 			<div class="col">
 				<div class="d-flex justify-content-around mb-3">
 
-					<label class="primary p-2 rounded" for="saisir_text" >
-						<input type="radio" checked style="margin-right: 5px;" name="optradio" id="saisir_text" mat-raised-button
-							(click)="onSelectTextArea($event)">Saisir un texte</label>
+					<label class="primary p-2 rounded" for="saisir_text">
+						<input type="radio" checked style="margin-right: 5px;" name="optradio" id="saisir_text"
+							mat-raised-button (click)="onSelectTextArea($event)">Saisir un texte</label>
 
 
 					<label class="primary p-2 rounded" for="upload_file">
 						<input type="radio" style="margin-right: 5px;" name="optradio" id="upload_file"
-							(click)="onSelectUploadFile($event)">Uploader un fichier</label>
+							(click)="onSelectUploadFile($event)">Charger un fichier</label>
 
 				</div>
 
-				<div *ngIf="textArea">
-					<textarea placeholder="Enter the text..." rows="5" [(ngModel)]="text" maxlength="8000"
-						class="rounded "></textarea>
-				</div>
-
-				<div class="d-flex justify-content-around align-items-center">
-					<button *ngIf="textArea" (click)="sendToSpacy($event)" mat-raised-button
-						class="primary w-25">Envoyer</button>
-					<button *ngIf="textArea" (click)="clearText()" mat-raised-button
-						class="danger w-25">Annuler</button>
-					<!--<input type="file" accept=".txt,.zip" (change)="fileUpload($event)" #myInput>-->
-					
-
-					<div class="dropzone mat-elevation-z8" *ngIf="uploadFile">
-						<img src="assets/icons/upload.png" width="100" alt="">
-						<input  type="file" accept=".txt,.zip" (change)="sendToSpacy($event)" multiple #myInput class="mt-5" id="fileDropReff">
-										
-						<label for="fileDropReff"> &nbsp;<strong>Cliquez pour téléverser un fichier</strong></label>
-						<h4>Nom du fichier: {{fileName}}</h4>
-						
+				<div class="textArea" *ngIf="textArea">
+					<div>
+						<textarea placeholder="Saisir un texte (10000 caractères maximum) ..." rows="5" [(ngModel)]="text" maxlength="8000"
+							class="rounded "></textarea>
 					</div>
-						
+
+					<div class="d-flex justify-content-around align-items-center">
+						<button *ngIf="textArea" (click)="sendToSpacy($event)" mat-raised-button
+							class="primary">Cartographier</button>
+						<button *ngIf="textArea" (click)="clearText()" mat-raised-button
+							class="danger">Effacer</button>
+						<!--<input type="file" accept=".txt,.zip" (change)="fileUpload($event)" #myInput>-->
+					</div>
+
 				</div>
+				<div *ngIf="uploadFile" style="cursor: pointer;">
+					<label for="fileDropReff" class="dropzone mat-elevation-z8 info" style="cursor: pointer;">
+						<img src="assets/icons/upload.png" width="100" alt="" class="mb-1">
+
+						<input type="file" accept=".txt,.zip" (change)="sendToSpacy($event)" #myInput class="mt-5"
+							id="fileDropReff">
+
+						<h5>Cliquez pour téléverser un fichier </h5>
+						<h5>(type txt ou zip, taille maximale: 100 ko) </h5>
+						<h4 class="warning px-2 rounded">{{fileName}}</h4>
+					</label>
+				</div>
+
 				<h4 class="text-center danger rounded my-1 msg">{{msg}}</h4>
 			</div>
 		</div>
-		<div class="row">
+		<div class="row lieuList">
 			<div *ngIf="foundCities.length === 0 && fileName !=''" class="spinner"></div>
-			<div class="col py-3 parent-cities" *ngIf="foundCities.length > 0">
+			<div class="col-7 py-3" *ngIf="duplicatedCities.length > 0">
 
-				<h2 class="text-center danger mb-2 mat-elevation-z8 rounded" style="display: block; margin:auto;  width:75%">Lieux trouvés</h2>
-				<div  [ngClass]="{'rounded height2' :textArea, 'rounded height1' :!textArea}">
-					<Div *ngFor="let location of foundCities; let i=index">
-						<label for="checkbox{{i}}" class="warning p-2 my-3 rounded mat-elevation-z8" style="display: block; margin:auto;  width:100%; margin-bottom:5px">
+				<h3 class="text-center white mb-2 mat-elevation-z8 rounded"
+					style="display: block; margin:auto;  width:75%">Lieux dupliqués</h3>
+				<div [ngClass]="{'rounded height2' :textArea, 'rounded height1' :!textArea}">
+					<Div *ngFor="let location of duplicatedCities; let i=index">
+						<label for="checkbox{{i}}" class="warning p-2 my-3 rounded mat-elevation-z8"
+							style="display: block; margin:auto;  width:100%; margin-bottom:5px">
 							<input type="checkbox" id="checkbox{{i}}"
 								(click)="confirmLocation($event,location.id)"><span class="ml-1">{{location.city}}
 								{{location.country}}</span>
 						</label>
 					</Div>
 				</div>
-				<button class="primary" mat-raised-button style="display: block; margin:auto;  width:75%"
+				<button class="primary" mat-raised-button style="display: block; margin:auto;  width:100%"
 					(click)="displayOnMap()">Afficher sur la carte</button>
+			</div>
+			<div class="col-5 py-3" *ngIf="notFoundCities.length > 0">
+				<h3 class="text-center white mb-2 mat-elevation-z8 rounded"
+					style="display: block; margin:auto;  width:75%">non reconnus</h3>
+					<div [ngClass]="{'rounded height2' :textArea, 'rounded height1' :!textArea}">
+						<Div *ngFor="let location of notFoundCities;" class="my-3">
+							<span class="danger p-2 my-3 rounded mat-elevation-z8 w-100 d-block">{{location.city}}</span>
+						</Div>
+					</div>
 			</div>
 		</div>
 	</div>
 
-	<!-- <div [ngClass]="{'col-7' :foundCities.length > 0, 'col-9' :foundCities.length === 0}" id="map">
-		<button (click)="displayOnMap()" color="light" mat-mini-fab class="center-button"
-			*ngIf="foundCities.length > 0 ">
-			<mat-icon> my_location</mat-icon>
-		</button>
-	</div> -->
 	<div class="col-9">
 		<div class="row" id="map">
-			<button (click)="displayOnMap()" color="light" mat-mini-fab class="center-button"
-				*ngIf="foundCities.length > 0 ">
+			<button (click)="onSelectText(textSelected)" color="light" mat-mini-fab class="center-button"
+				*ngIf="foundCities.length > 0 && onCenter">
 				<mat-icon> my_location</mat-icon>
 			</button>
+			<button (click)="displayOnMap()" color="light" mat-mini-fab class="center-button"
+				*ngIf="foundCities.length > 0  && !onCenter">
+				<mat-icon> my_location</mat-icon>
+			</button>
+
 		</div>
-		<div class="row slider">
-			<div class="col">
-				<div class="slidecontainer ">
-					<input type="range" min="1" max="100" value="50" class="w-75 my-5" id="myRange" >
-				  </div>
-				  <mat-slider aria-label="unit(s)"></mat-slider>
+		<div class="row slider d-flex items-align-center" *ngIf="foundCities.length > 0">
+			<div class="col mt-3">
+				
+				<div *ngIf="listOfText.length > 0" class="row" style="width: 90%;;">
+					<input class="w-100" type="range" name="amountRange" min="0" max="{{listOfText.length}}" value="0"
+						#ref (input)="onMoveSlider(ref.value)" />
+				</div>
+				<div *ngIf="listOfText.length > 0" class="row" style="width: 90%;;">
+					
+					<div class="col d-flex justify-content-end"
+					style="border-right: 3px solid rgb(0, 0, 0);"
+						*ngFor="let text of listOfText; let i=index" >
+						<span>{{text}}</span>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -115,6 +139,12 @@
 
 
 
+<!-- <div [ngClass]="{'col-7' :foundCities.length > 0, 'col-9' :foundCities.length === 0}" id="map">
+		<button (click)="displayOnMap()" color="light" mat-mini-fab class="center-button"
+			*ngIf="foundCities.length > 0 ">
+			<mat-icon> my_location</mat-icon>
+		</button>
+	</div> -->
 
 
 <!--<mat-form-field class=" mt-3">
