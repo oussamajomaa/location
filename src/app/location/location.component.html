@@ -1,4 +1,6 @@
-<div class="container p-3 info mat-elevation-z8" style="margin: auto;margin-top:15px;">
+
+
+<div class="container p-3 mat-elevation-z8 mb-5 white" style="margin: auto;margin-top:15px;">
     <!-- <div *ngIf="!loading" class="spinner"></div>
     <div  id="mapLocation" class="col-8"><h6 class="click">Click on the map to get location</h6></div> -->
 
@@ -24,7 +26,7 @@
         </div>
     </div>
     <div class="d-flex justify-content-between my-2">
-        <button mat-mini-fab (click)="onAddLocation()" style="background: #002147;"
+        <button mat-mini-fab (click)="onAddLocation()" class="bg-success"
             *ngIf='country && city && lat && lng' matTooltip="Ajouter une autre location">
             <mat-icon>add</mat-icon>
         </button>
@@ -37,7 +39,7 @@
             <h3>Pays</h3>
         </div>
         <div class="col">
-            <h3>Ville</h3>
+            <h3>Lieu</h3>
         </div>
         <div class="col">
             <h3>Lat</h3>
@@ -49,7 +51,10 @@
             <h3>Actions</h3>
         </div>
     </div>
-    <div class="row white m-1 rounded" *ngFor="let location of locations">
+    <div 
+        class="row m-1 rounded" 
+        style="background: rgb(231, 231, 231);" 
+        *ngFor="let location of locations; let i=index">
         <div class="col">
             <h3>{{location.country}}</h3>
         </div>
@@ -60,10 +65,12 @@
             <h3>{{location.lat}}</h3>
         </div>
         <div class="col">
-            <h3>{{location.lng}}</h3>
+           <h3>{{location.lng}}</h3>
         </div>
         <div class="col">
-            <mat-icon style="margin-right: 10px;" color="warn" (click)="removeCity(location.city)" matTooltip="delete">
+            <mat-icon style="margin-right: 10px; cursor:pointer;" 
+                color="warn" (click)="removeCity(location.city)" 
+                matTooltip="delete">
                 delete
             </mat-icon>
         </div>
@@ -74,7 +81,8 @@
             mat-raised-button 
             *ngIf="locations.length > 0"
             style="display:block; margin-right:0;margin-left:auto;"
-            class="primary ">Valider & Enregistrer
+            class="success ">Valider & Enregistrer
         </button>
     </div>
 </div>
+<div style="height: 100px;"></div>

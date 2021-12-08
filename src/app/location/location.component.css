@@ -8,22 +8,11 @@ h3{
   font-weight: bolder;
 }
 
-
-
-/* .spinner{
-  border: 16px solid silver;
-  border-top: 16px solid #337AB7;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  animation: spin 700ms linear infinite;
-  top:50%;
-  left: 50%;
-  position: absolute;
-  z-index: 100;
+.content{
+  height: 93vh;
+  padding-left: 15px;
+  padding-right: 18px;
+  padding-top: 15px;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg)}
-  100% { transform: rotate(-360deg);}
-} */
+

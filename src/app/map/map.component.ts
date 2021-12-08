@@ -4,6 +4,7 @@ import * as L from 'leaflet';
 import { DataService } from '../services/data.service';
 import { environment } from 'src/environments/environment';
 import { OpenStreetMapProvider, GeoSearchControl } from 'leaflet-geosearch';
+import { Router } from '@angular/router';
 const provider = new OpenStreetMapProvider();
 const searchControl = GeoSearchControl({
 	provider: provider,
@@ -34,6 +35,7 @@ export class MapComponent implements AfterViewInit {
 	notFoundCities = []
 	duplicatedCities = []
 	notDuplicatedCities = []
+	allNotDuplicatedCities = []
 	foundCountries = []
 	file: any;
 	msg: string
@@ -57,6 +59,7 @@ export class MapComponent implements AfterViewInit {
 	constructor(
 		private dataService: DataService,
 		private http: HttpClient,
+		private router:Router
 
 	) { }
 
@@ -214,6 +217,18 @@ export class MapComponent implements AfterViewInit {
 							}
 						})
 					})
+
+					this.spacyList.forEach(item => {
+						this.notDuplicatedCities.forEach(location => {
+							if (item.city === location.city) {
+								item.lat = location.lat
+								item.lng = location.lng
+								item.country = location.country
+								this.allNotDuplicatedCities.push(item)
+							}
+						})
+					})
+
 					
 					// if (this.map) this.map.remove()
 
@@ -271,7 +286,7 @@ export class MapComponent implements AfterViewInit {
 					// convert list to string
 					this.foundCities = []
 					this.spacyText = spacyLoc.toString()
-					console.log('this.spacyText ', this.spacyText);
+					// console.log('this.spacyText ', this.spacyText);
 					if (this.spacyText != "") {
 						this.locations.map(location => {
 							// Chercher une ville dans text
@@ -333,6 +348,17 @@ export class MapComponent implements AfterViewInit {
 						})
 					})
 					console.log('all cities with text', this.allCities);
+
+					this.spacyList.forEach(item => {
+						this.notDuplicatedCities.forEach(location => {
+							if (item.city === location.city) {
+								item.lat = location.lat
+								item.lng = location.lng
+								item.country = location.country
+								this.allNotDuplicatedCities.push(item)
+							}
+						})
+					})
 					
 					
 					// if (this.map) this.map.remove()
@@ -364,7 +390,11 @@ export class MapComponent implements AfterViewInit {
 			let loc = this.locations.filter(location => {
 				return location.id === parseInt(id)
 			})
+			console.log(loc[0]);
+			console.log(this.places);
+			
 			this.places.push(loc[0])
+			console.log(this.places);
 		}
 		if (!event.target.checked) {
 			// console.log('unchecked');
@@ -374,10 +404,6 @@ export class MapComponent implements AfterViewInit {
 	}
 
 	displayOnMap() {
-		// console.log("this.places",this.places);
-		// console.log("this.spacyList",this.spacyList);
-		// console.log("this.allCities",this.allCities)
-		
 		
 		this.places.map(location => {
 			// return location.occurence = this.wordList.filter(word => word === location.city).length
@@ -413,13 +439,27 @@ export class MapComponent implements AfterViewInit {
 
 	//  Cette methode pour recentrer la carte selon les markers en cliquant sur le bouton centrer
 	onSelectText(text){
+		// console.log('all cities ',this.allCities);
+		// console.log("this.allNotDuplicatedCities ",this.allNotDuplicatedCities);
+		
 		this.onCenter = true
 		this.textSelected = text
+		// console.log('this.listOfText  ',this.listOfText);
+		// console.log('value range', this.rangevalue);
+		
+		
+		// console.log('selected text ',this.textSelected);
+		
+		console.log("all no duplicated citites", this.allNotDuplicatedCities);
 		
 		let arr = []
-		this.allCities.filter(place => {
-			if (place.fileName === this.textSelected) arr.push(place)
+		// this.allCities.filter(place => {
+		// 	if (place.fileName === this.textSelected) arr.push(place)
 			
+		// })
+		this.allNotDuplicatedCities.filter(place => {
+			if (place.fileName === this.textSelected) arr.push(place)
+	
 		})
 		console.log(arr);
 
@@ -470,9 +510,9 @@ export class MapComponent implements AfterViewInit {
 		})
 		// Contenir tous les markers sur la carte
 		if (this.markers.length > 1) {
-			console.log(this.places);
+			// console.log(this.places);
 			this.bounds = L.featureGroup(this.markers);
-			console.log(this.bounds);
+			// console.log(this.bounds);
 			this.map.fitBounds(this.bounds.getBounds(), { padding: [0, 0] });
 		}
 	}
@@ -484,6 +524,11 @@ export class MapComponent implements AfterViewInit {
 		console.log(value);
 		this.onSelectText(this.listOfText[this.rangevalue-1])
 		
+	}
+
+	navigateToLocation(){
+		// console.log('Les lieux non reconnus ',this.notFoundCities)
+		this.router.navigate(["location"],{queryParams:{notFoundCities:JSON.stringify(this.notFoundCities)}})
 	}
 
 }

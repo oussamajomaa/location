@@ -1,7 +1,8 @@
 body{
   padding: 0;
   margin: 0;
-  background: white;
+  /* background: white; */
+  
 }
 
 .companyName{
@@ -28,8 +29,7 @@ a:hover{
   flex: 1 1 auto;
 }
 .mat-sidenav-content{
-  /* padding: 1%; */
-
+  background: #cfcfcf !important;  
 }
 
 .mat-sidenav{

@@ -50,6 +50,7 @@
 # 	app.run(debug=True)
 
 import os
+
 # from os.path import join, dirname, realpath
 from flask import Flask, flash, request, redirect, url_for,render_template,abort
 from werkzeug.utils import secure_filename
@@ -116,24 +117,41 @@ def process():
             
             # Assign extracted files in variable array
             extractedFiles = glob.glob(baseUrl+"/uploads/*.txt")
-            print(extractedFiles)
+            print("extracted files " + str(extractedFiles))
             results = []
             for extractedFile in extractedFiles:
-                print(extractedFile)
                 f = open(extractedFile, "r")
                 contents = f.readlines()
+
+                # Lire la première ligne du texte et récupérer la date en ignorant la case sensitive
+                if 'date' in contents[0]:
+                    # .strip() to remove space before and after string
+                    fileDate = contents[0].split(":")[1].strip()
+                else:
+                    fileDate = "1900"
+                print(fileDate)
+                if len(contents) > 1:
+                    if 'titre' in contents[1]:
+                        title = contents[1].split(":")[1].strip()
+                    else:
+                        title = extractedFile
+                    print(title)
+                else:
+                    title = extractedFile
+
                 contents = " ".join(contents)
                 wikitext = nlp(contents)
                 for word in wikitext.ents:
                     item = {
-                        'fileName':extractedFile,
+                        'fileDate':fileDate,
+                        'fileName':title,
                         'city':word.text,
                         'label':word.label_
                     }
                     
                     if word.label_ == "LOC":
                         results.append(item)
-                        print(word.text)
+                        # print(word.text)
 
             for extractedFile in extractedFiles:
                 os.remove(extractedFile)
@@ -142,20 +160,40 @@ def process():
             f = open(baseUrl+"/uploads/"+filename, "r")
             print(baseUrl)
             contents = f.readlines()
+
+             # Lire la première ligne du texte et récupérer la date en ignorant la case sensitive
+            if 'date' in contents[0]:
+                # .strip() to remove space before and after string
+                fileDate = contents[0].split(":")[1].strip()
+            else:
+                fileDate = "1900"
+            print(fileDate)
+
+            if len(contents) > 1:
+                if 'titre' in contents[1]:
+                    # .strip() to remove space before and after string
+                    title = contents[1].split(":")[1].strip()
+                else:
+                    title = filename
+                print(title)
+            else:
+                title = filename
+
             # transform list into string
             contents = " ".join(contents)
             results = []
             wikitext = nlp(contents)
             for word in wikitext.ents:
                 item = {
-                    'fileName':filename,
+                    'fileDate':fileDate,
+                    'fileName':title,
                     'city':word.text,
                     'label':word.label_
                 }
 
                 if word.label_ == "LOC":
                     results.append(item)
-                    print(word.text)
+                    # print(word.text)
 
 
         os.remove(baseUrl+"/uploads/"+filename)

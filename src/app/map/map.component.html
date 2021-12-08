@@ -1,5 +1,5 @@
 <div *ngIf="!loading" class="spinner"></div>
-<div class="row content " style="background: #cfcfcf;">
+<div class="row content ">
 	<div class="col-3  p-2">
 		<div class="row inputs">
 			<div class="col">
@@ -18,15 +18,14 @@
 
 				<div class="textArea" *ngIf="textArea">
 					<div>
-						<textarea placeholder="Saisir un texte (10000 caractères maximum) ..." rows="5" [(ngModel)]="text" maxlength="8000"
-							class="rounded "></textarea>
+						<textarea placeholder="Saisir un texte (10000 caractères maximum) ..." rows="5"
+							[(ngModel)]="text" maxlength="8000" class="rounded "></textarea>
 					</div>
 
 					<div class="d-flex justify-content-around align-items-center">
 						<button *ngIf="textArea" (click)="sendToSpacy($event)" mat-raised-button
 							class="primary">Cartographier</button>
-						<button *ngIf="textArea" (click)="clearText()" mat-raised-button
-							class="danger">Effacer</button>
+						<button *ngIf="textArea" (click)="clearText()" mat-raised-button class="danger">Effacer</button>
 						<!--<input type="file" accept=".txt,.zip" (change)="fileUpload($event)" #myInput>-->
 					</div>
 
@@ -51,8 +50,8 @@
 			<div *ngIf="foundCities.length === 0 && fileName !=''" class="spinner"></div>
 			<div class="col-7 py-3" *ngIf="duplicatedCities.length > 0">
 
-				<h3 class="text-center white mb-2 mat-elevation-z8 rounded"
-					style="display: block; margin:auto;  width:75%">Lieux dupliqués</h3>
+				<h3 class="text-center white mb-2 mat-elevation-z8 rounded py-2"
+					style="display: block; margin:auto;  width:100%">Lieux dupliqués</h3>
 				<div [ngClass]="{'rounded height2' :textArea, 'rounded height1' :!textArea}">
 					<Div *ngFor="let location of duplicatedCities; let i=index">
 						<label for="checkbox{{i}}" class="warning p-2 my-3 rounded mat-elevation-z8"
@@ -67,13 +66,14 @@
 					(click)="displayOnMap()">Afficher sur la carte</button>
 			</div>
 			<div class="col-5 py-3" *ngIf="notFoundCities.length > 0">
-				<h3 class="text-center white mb-2 mat-elevation-z8 rounded"
-					style="display: block; margin:auto;  width:75%">non reconnus</h3>
-					<div [ngClass]="{'rounded height2' :textArea, 'rounded height1' :!textArea}">
-						<Div *ngFor="let location of notFoundCities;" class="my-3">
-							<span class="danger p-2 my-3 rounded mat-elevation-z8 w-100 d-block">{{location.city}}</span>
-						</Div>
-					</div>
+				<h3 class="text-center white mb-2 mat-elevation-z8 rounded py-2"
+					style="display: block; margin:auto;  width:100%">non reconnus</h3>
+				<div [ngClass]="{'rounded height2' :textArea, 'rounded height1' :!textArea}">
+					<Div *ngFor="let location of notFoundCities;" class="my-3">
+						<span class="danger p-2 my-3 rounded mat-elevation-z8 w-100 d-block">{{location.city}}</span>
+					</Div>
+				</div>
+
 			</div>
 		</div>
 	</div>
@@ -92,18 +92,24 @@
 		</div>
 		<div class="row slider d-flex items-align-center" *ngIf="foundCities.length > 0">
 			<div class="col mt-3">
-				
-				<div *ngIf="listOfText.length > 0" class="row" style="width: 90%;;">
+				<div *ngIf="listOfText.length > 0" class="row" style="width: 90%;">
 					<input class="w-100" type="range" name="amountRange" min="0" max="{{listOfText.length}}" value="0"
 						#ref (input)="onMoveSlider(ref.value)" />
 				</div>
-				<div *ngIf="listOfText.length > 0" class="row" style="width: 90%;;">
-					
-					<div class="col d-flex justify-content-end"
+				<div *ngIf="listOfText.length > 0" class="row" style="width: 90%;">
+					<button 
+						mat-raised-button
+						*ngFor="let text of listOfText" 
+						(click)="onSelectText(text)" 
+						class="light mx-1">
+						{{text}}
+					</button>
+
+					<!-- <div class="col d-flex justify-content-end"
 					style="border-right: 3px solid rgb(0, 0, 0);"
 						*ngFor="let text of listOfText; let i=index" >
 						<span>{{text}}</span>
-					</div>
+					</div> -->
 				</div>
 			</div>
 		</div>

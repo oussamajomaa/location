@@ -57,7 +57,6 @@ export class LocationComponent implements AfterViewInit {
 		
 		this.locations = this.locations.filter(location => {
 			return location.city != city
-			// return location
 		})
 	}
 
