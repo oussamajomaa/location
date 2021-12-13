@@ -45,7 +45,7 @@
   }
 
 .slider{
-    height: 15vh;
+    height: 16vh;
 }
 
 .dropzone{
@@ -108,7 +108,7 @@
 #map {
     position: relative;
     border: #17A2B8 1px solid;
-    height: 78vh;
+    height: 77vh;
   }
 
 .center-button{
@@ -150,27 +150,4 @@ h3, h2, label{
   z-index: 10000;
 }
 
-
-
-
-/* @media (max-width:1000px){
-    .enter-text{
-        flex-direction: column;
-    }
-    .text-area{
-        width: 100%;
-        
-    }
-    textarea{
-        height:200px;
-    }
-    
-    .dropzone{
-        width: 100%;
-        margin: auto;
-        height: 60px;
-        flex-direction: row;
-        margin-bottom: 10px;
-    }
-} */
-
+/* slider css */

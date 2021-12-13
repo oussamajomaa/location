@@ -37,6 +37,8 @@ import { AngularFireStorageModule } from '@angular/fire/compat/storage';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { LeafletMarkerClusterModule } from '@asymmetrik/ngx-leaflet-markercluster';
 import {MatTooltipModule} from '@angular/material/tooltip';
+import { NgxSliderModule } from '@angular-slider/ngx-slider';
+
 
 @NgModule({
   declarations: [
@@ -75,6 +77,7 @@ import {MatTooltipModule} from '@angular/material/tooltip';
     MatChipsModule,
     LeafletMarkerClusterModule,
     MatTooltipModule,
+    NgxSliderModule,
 
   ],
   // providers: [{provide: LocationStrategy, useClass: HashLocationStrategy}],

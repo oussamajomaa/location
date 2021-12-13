@@ -118,6 +118,13 @@ router.get('/cities',(req,res)=>{
     })
 })
 
+// router.get('/cities',(req,res)=>{
+//     mysql.query('SELECT * from villes', (err,rows)=>{
+//         if (!err) res.send(rows)
+//         else console.log(err)
+//     })
+// })
+
 router.post('/new_location',(req,res)=>{
     // console.log(req.body)
     // mysql.query('INSERT INTO countries SET ?', req.body, (err, rows) => {

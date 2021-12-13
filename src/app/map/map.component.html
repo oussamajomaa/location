@@ -84,37 +84,43 @@
 				*ngIf="foundCities.length > 0 && onCenter">
 				<mat-icon> my_location</mat-icon>
 			</button>
-			<button (click)="displayOnMap()" color="light" mat-mini-fab class="center-button"
+			<button (click)="onSelectDate(dateSelected)" color="light" mat-mini-fab class="center-button"
 				*ngIf="foundCities.length > 0  && !onCenter">
 				<mat-icon> my_location</mat-icon>
 			</button>
 
 		</div>
 		<div class="row slider d-flex items-align-center" *ngIf="foundCities.length > 0">
-			<div class="col mt-3">
-				<div *ngIf="listOfText.length > 0" class="row" style="width: 90%;">
+			<div class="col mt-1">
+				<!--<div *ngIf="listOfText.length > 0" class="row" style="width: 90%;">
 					<input class="w-100" type="range" name="amountRange" min="0" max="{{listOfText.length}}" value="0"
 						#ref (input)="onMoveSlider(ref.value)" />
-				</div>
-				<div *ngIf="listOfText.length > 0" class="row" style="width: 90%;">
-					<button 
-						mat-raised-button
-						*ngFor="let text of listOfText" 
-						(click)="onSelectText(text)" 
+				</div>-->
+				<div *ngIf="listOfText.length > 0" class="row mb-1" style="width: 90%;">
+					<button mat-raised-button *ngFor="let item of listOfText" 
+						(click)="onSelectText(item.legend)"
 						class="light mx-1">
-						{{text}}
+						{{item.legend}}
 					</button>
 
-					<!-- <div class="col d-flex justify-content-end"
-					style="border-right: 3px solid rgb(0, 0, 0);"
-						*ngFor="let text of listOfText; let i=index" >
-						<span>{{text}}</span>
-					</div> -->
 				</div>
+				<div>
+					<ngx-slider 
+						[(value)]="value" 
+						[options]="options"
+						[(ngModel)]="dateSelected"
+						(mouseup)="onSelectDate(dateSelected)">
+						
+					</ngx-slider>
+				</div>
+				
+
 			</div>
 		</div>
 	</div>
 </div>
+
+
 
 
 

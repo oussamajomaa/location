@@ -11,9 +11,9 @@ export const environment = {
     appId: "1:550942351568:web:c8fdf0c6159e4067d17ed5",
     measurementId: "G-763ZVQQ8PP"
   },
-  url: 'http://vps783302.ovh.net:5555',
+  // url: 'http://vps783302.ovh.net:5555',
   // url_py: 'http://vps783302.ovh.net:5000',
-  // url: 'http://localhost:5555',
+  url: 'http://localhost:5555',
   url_py: 'http://localhost:5000'
 };
 

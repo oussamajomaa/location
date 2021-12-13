@@ -72,6 +72,20 @@ export class LocationComponent implements AfterViewInit {
 		console.log(location);
 	}
 
-	
+	value:number
+	formatLabel(value: number | null) {
+        if (!value) {
+          return 0;
+        }
+        this.value = value;
+        console.log(this.value);
+        return value;
+      }
+
+	 showTime:any
+	 onChangeRange(rangeValue: any) {
+		console.log(rangeValue);
+		this.showTime = rangeValue;
+	  }
 
 }
