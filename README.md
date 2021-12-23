@@ -25,3 +25,34 @@ Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To u
 ## Further help
 
 To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+
+
+## ADD ToastrModule
+
+npm install ngx-toastr
+npm install @angular/animations --save
+
+in app.module.ts:
+import { ToastrModule } from 'ngx-toastr';
+
+and in our imports array, enter:
+ToastrModule.forRoot(),
+
+
+
+
+In angular.json:
+"styles": [
+   "src/styles.css",
+   "node_modules/ngx-toastr/toastr.css"
+]
+
+or in style.css
+@import "../node_modules/ngx-toastr/toastr.css";
+
+
+Finally, before we can use ngx-toastr in any component in our Angular application, we need to run:
+import { ToastrService } from ‘ngx-toastr’;
+
+It is time for us to inject ToastrService into the respective component.ts constructor by running:
+

@@ -38,7 +38,7 @@ import { NotFoundComponent } from './not-found/not-found.component';
 import { LeafletMarkerClusterModule } from '@asymmetrik/ngx-leaflet-markercluster';
 import {MatTooltipModule} from '@angular/material/tooltip';
 import { NgxSliderModule } from '@angular-slider/ngx-slider';
-
+import { ToastrModule } from 'ngx-toastr';
 
 @NgModule({
   declarations: [
@@ -78,6 +78,11 @@ import { NgxSliderModule } from '@angular-slider/ngx-slider';
     LeafletMarkerClusterModule,
     MatTooltipModule,
     NgxSliderModule,
+    ToastrModule.forRoot({
+      timeOut: 1500,
+      easing:'ease-in',
+      positionClass:"toast-top-center"
+    }),
 
   ],
   // providers: [{provide: LocationStrategy, useClass: HashLocationStrategy}],

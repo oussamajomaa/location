@@ -15,6 +15,7 @@ export const environment = {
   // url_py: 'http://vps783302.ovh.net:5000',
   url: 'http://localhost:5555',
   url_py: 'http://localhost:5000'
+  // url_py: 'https://named-entity.herokuapp.com'
 };
 
 

@@ -1,79 +1,27 @@
-# from flask import Flask,render_template,url_for,request
-
-
-# from flask_cors import CORS, cross_origin
-# import json
-
-# import re
-# import pandas as pd
-# import spacy
-# # from spacy.lang.fr.examples import sentences 
-# from spacy import displacy
-# # nlp = spacy.load('en_core_web_sm')
-# # import en_core_web_sm
-# import fr_core_news_md
-
-# nlp = fr_core_news_md.load()
-# app = Flask(__name__)
-# cors = CORS(app, resources={r"/*": {"origins": "*"}})
-
-# @app.route('/text')
-# def index():
-#     results = []
-#     wikitext = nlp(request.args.get('text'))
-#     for word in wikitext.ents:
-#         item = {
-#             'word':word.text,
-#             'label':word.label_
-#         }
-        
-#         results.append(item)
-#         print(word.text)
-    
-#     return json.dumps(results)
-
-
-
-# @app.route('/file', methods=['POST'])
-# def process():
-#     if request.method == 'POST':
-#         print(request.method)
-#         # FileStorage object wrapper
-#         # file = request.files["file"] 
-#         # if file:
-#         #     print(file.filename)
-
-
-
-
-# if __name__ == '__main__':
-# 	app.run(debug=True)
+# Difference
+from spacy.lang.fr.examples import sentences 
+import fr_core_news_md
+nlp = fr_core_news_md.load()
+# ###
 
 import os
-
-# from os.path import join, dirname, realpath
 from flask import Flask, flash, request, redirect, url_for,render_template,abort
 from werkzeug.utils import secure_filename
 import glob
 import zipfile
-
 from flask_cors import CORS, cross_origin
 import json
-# import spacy
 
-# nlp = spacy.load("fr_core_news_sm")
-from spacy.lang.fr.examples import sentences 
-import fr_core_news_md
-
-nlp = fr_core_news_md.load()
 app = Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
-
 
 app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024
 app.config['UPLOAD_EXTENSIONS'] = ['.txt', '.zip']
 app.config['UPLOAD_PATH'] = 'uploads'
 
+
+
+    # os.remove(f)
 
 @app.route('/text')
 def index():
@@ -87,16 +35,24 @@ def index():
         }
         if word.label_ == "LOC":
             results.append(item)
-            print(word.text)
-        print(results)
+
     return json.dumps(results)
 
 
 
 @app.route('/file', methods=['POST'])
 def process():
+    # Get the base of path
+    baseUrl = os.path.dirname(os.path.abspath(__file__))
+    
+    # Delete existing files
+    files = glob.glob(baseUrl+"/uploads/*")
+    for f in files:
+        os.remove(f)
+        print('the file '+f+' has been deleted!!!')
+
+        
     uploaded_file = request.files['file']
-    print("uploaded_file is "+str(uploaded_file) )
     filename = secure_filename(uploaded_file.filename)
     if filename != '':
         file_ext = os.path.splitext(filename)[1]
@@ -106,9 +62,9 @@ def process():
         # save file to folder
         uploaded_file.save(os.path.join(app.config['UPLOAD_PATH'], filename))
 
-        # Get the base of path
-        baseUrl = os.path.dirname(os.path.abspath(__file__))
         
+
+
         # Test if a zip file and extract all in uploads folder
         if file_ext == ".zip":
             print("file_ext ******** " + file_ext)

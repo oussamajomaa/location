@@ -118,6 +118,17 @@ router.get('/cities',(req,res)=>{
     })
 })
 
+router.post('/add-city',(req,res) => {
+    const lieu = req.body
+    mysql.query('INSERT INTO cities SET ?', lieu, (err, rows) => {
+        if (!err) {
+            res.send({ message: `Les lieux ont été ajoutés.`})
+        } else {
+            console.log(err)
+        }
+    })
+})
+
 // router.get('/cities',(req,res)=>{
 //     mysql.query('SELECT * from villes', (err,rows)=>{
 //         if (!err) res.send(rows)

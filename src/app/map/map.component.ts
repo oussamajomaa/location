@@ -9,6 +9,8 @@ const provider = new OpenStreetMapProvider();
 const searchControl = GeoSearchControl({
 	provider: provider,
 });
+import Geocoder from 'leaflet-control-geocoder';
+
 
 import { Options } from "@angular-slider/ngx-slider";
 
@@ -26,17 +28,6 @@ export class MapComponent implements AfterViewInit {
 	options: Options = {
 		showTicksValues: true,
 		stepsArray:[]
-		// stepsArray: [
-		// 	{ value: 1 },
-		// 	{ value: 2 },
-		// 	{ value: 3},
-		// 	{ value: 4 },
-		// 	{ value: 5 },
-		// 	{ value: 6 },
-		// 	{ value: 7 },
-		// 	{ value: 8 },
-		// 	{ value: 9, legend: "Excellent" }
-		// ]
 	};
 
 	
@@ -87,7 +78,6 @@ export class MapComponent implements AfterViewInit {
 	) { }
 
 	ngAfterViewInit(): void {
-
 		this.dataService.getLocation().subscribe((res: any) => {
 			this.locations = res
 		})
@@ -110,6 +100,8 @@ export class MapComponent implements AfterViewInit {
 		});
 		this.mainLayer.addTo(this.map);
 		this.map.addControl(searchControl);
+
+		
 	}
 
 
@@ -161,6 +153,8 @@ export class MapComponent implements AfterViewInit {
 		this.text = ''
 		this.msg = ""
 		this.fileName = ""
+		this.listOfDate = []
+		this.listOfText = []
 		// this.rangevalue = 0
 		this.onCartographier = true
 		if (this.map) this.map.remove()
@@ -226,6 +220,12 @@ export class MapComponent implements AfterViewInit {
 						}
 						this.listOfDate.push(item)
 					}
+					this.listOfDate = this.listOfDate.sort((a,b) => {
+							if (parseInt(a.value) > parseInt(b.value)) return 1
+							if (parseInt(a.value) < parseInt(b.value)) return -1
+							return 0
+						})
+					
 					this.options.stepsArray = this.listOfDate
 					console.log("listOfDate    **** ++++ *** ", this.options.stepsArray);
 
@@ -319,8 +319,8 @@ export class MapComponent implements AfterViewInit {
 	}
 
 	displayOnMap() {
-		console.log(this.onCenter);
-
+		console.log("on center = ",this.onCenter);
+		// this.onCenter = true
 		this.places.map(location => {
 			// return location.occurence = this.wordList.filter(word => word === location.city).length
 			return location.occurence = this.spacyList.filter(item => item.city.match("\\b" + location.city + "\\b")).length
@@ -350,6 +350,7 @@ export class MapComponent implements AfterViewInit {
 
 	//  Cette methode pour recentrer la carte selon les markers en cliquant sur le bouton centrer
 	onSelectText(text) {
+		console.log("on center = ",this.onCenter);
 		console.log("text selected ",this.textSelected);
 		console.log("date  ",text);
 		this.onCenter = true
@@ -383,6 +384,20 @@ export class MapComponent implements AfterViewInit {
 		this.allNotDuplicatedCities.filter(place => {
 			if (place.fileDate === this.dateSelected) arr.push(place)
 		})
+
+		// Récupérer l'occurence de chaque lieu
+		arr.map(location => {
+			return location.occurence = this.spacyList.filter(item => item.city.match("\\b" + location.city + "\\b")).length
+		})
+		console.log(arr);
+
+		this.clusters.clearLayers()
+		this.getMarkers(arr)
+
+	}
+
+	onSelectALl(){
+		let arr = this.allNotDuplicatedCities
 
 		// Récupérer l'occurence de chaque lieu
 		arr.map(location => {
@@ -434,11 +449,6 @@ export class MapComponent implements AfterViewInit {
 			this.map.fitBounds(this.bounds.getBounds(), { padding: [0, 0] });
 		}
 	}
-
-
-
-
-
 }
 
 

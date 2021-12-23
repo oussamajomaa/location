@@ -10,5 +10,6 @@ export const environment = {
     measurementId: "G-763ZVQQ8PP"
   },
   url: 'http://vps783302.ovh.net:5555',
-  url_py: 'http://vps783302.ovh.net:5000',
+  //url_py: 'http://vps783302.ovh.net:5000',
+  url_py: 'http://localhost:5000'
 };
