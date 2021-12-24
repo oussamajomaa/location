@@ -125,7 +125,20 @@ export class LocationComponent implements AfterViewInit {
 		this.toastService.success("Les lieux ont été ajoutés!!!");
 		this.locations = []
 	}
-
+	csvToRowArray:any
+	uploadCSV(e){
+		let file = e.target.files[0]
+		let fileReader = new FileReader();
+    	fileReader.onload = (e) => {
+     
+			this.csvToRowArray = fileReader.result
+			let allTextLines = [];
+			allTextLines = this.csvToRowArray.split(/\r|\n|\r/);
+			console.log(allTextLines);
+		}
+    	fileReader.readAsText(file);
+		// https://therichpost.com/how-to-read-csv-file-in-angular-10/
+	}
 	
 
 }

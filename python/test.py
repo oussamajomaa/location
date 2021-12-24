@@ -5,6 +5,7 @@ nlp = fr_core_news_md.load()
 # ###
 
 import os
+import re
 from flask import Flask, flash, request, redirect, url_for,render_template,abort
 from werkzeug.utils import secure_filename
 import glob
@@ -130,23 +131,23 @@ def process():
 
             # transform list into string
             contents = " ".join(contents)
-            results = []
+            results = re.split(' |, |; |. |:', contents)
+            res = []
             wikitext = nlp(contents)
-            for word in wikitext.ents:
+            for word in results:
                 item = {
                     'fileDate':fileDate,
                     'fileName':title,
-                    'city':word.text,
-                    'label':word.label_
+                    'city':word,
+                    'label':word
                 }
-
-                if word.label_ == "LOC":
-                    results.append(item)
+                if word.istitle():
+                    res.append(item)
                     # print(word.text)
 
 
         os.remove(baseUrl+"/uploads/"+filename)
-    return json.dumps(results)
+    return json.dumps(res)
     
 
 if __name__ == '__main__':

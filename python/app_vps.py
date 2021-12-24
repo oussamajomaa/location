@@ -39,6 +39,15 @@ def index():
 
 @app.route('/file', methods=['POST'])
 def process():
+    # Get the base of path
+    baseUrl = os.path.dirname(os.path.abspath(__file__))
+    # Delete existing files
+    files = glob.glob(baseUrl+"/uploads/*")
+    for f in files:
+        os.remove(f)
+        print('the file '+f+' has been deleted!!!')
+
+        
     uploaded_file = request.files['file']
     filename = secure_filename(uploaded_file.filename)
     if filename != '':
@@ -49,9 +58,6 @@ def process():
         # save file to folder
         uploaded_file.save(os.path.join(app.config['UPLOAD_PATH'], filename))
 
-        # Get the base of path
-        baseUrl = os.path.dirname(os.path.abspath(__file__))
-        
         # Test if a zip file and extract all in uploads folder
         if file_ext == ".zip":
             print("file_ext ******** " + file_ext)
@@ -142,8 +148,6 @@ def process():
         os.remove(baseUrl+"/uploads/"+filename)
     return json.dumps(results)
     
-
-
 
 if __name__ == '__main__':
         from waitress import serve
