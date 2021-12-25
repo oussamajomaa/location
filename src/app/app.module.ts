@@ -28,11 +28,11 @@ import { FlexLayoutModule } from '@angular/flex-layout';
 import { HomeComponent } from './home/home.component';
 import { LocationComponent } from './location/location.component';
 
-import { environment } from 'src/environments/environment';
-import { AngularFireModule } from '@angular/fire/compat'
-import { AngularFireAuthModule } from '@angular/fire/compat/auth';
-import { AngularFireDatabaseModule } from '@angular/fire/compat/database';
-import { AngularFireStorageModule } from '@angular/fire/compat/storage';
+// import { environment } from 'src/environments/environment';
+// import { AngularFireModule } from '@angular/fire/compat'
+// import { AngularFireAuthModule } from '@angular/fire/compat/auth';
+// import { AngularFireDatabaseModule } from '@angular/fire/compat/database';
+// import { AngularFireStorageModule } from '@angular/fire/compat/storage';
 // import { HashLocationStrategy, LocationStrategy } from '@angular/common';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { LeafletMarkerClusterModule } from '@asymmetrik/ngx-leaflet-markercluster';
@@ -70,10 +70,10 @@ import { ToastrModule } from 'ngx-toastr';
     MatListModule,
     MatSidenavModule,
     MatSliderModule,
-    AngularFireModule.initializeApp(environment.firebaseConfig),
-    AngularFireAuthModule,
-    AngularFireDatabaseModule,
-    AngularFireStorageModule,
+    // AngularFireModule.initializeApp(environment.firebaseConfig),
+    // AngularFireAuthModule,
+    // AngularFireDatabaseModule,
+    // AngularFireStorageModule,
     MatChipsModule,
     LeafletMarkerClusterModule,
     MatTooltipModule,

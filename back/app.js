@@ -1,15 +1,13 @@
 const express = require('express')
 const cors = require('cors')
 const route = require('./routes')
-// const axios = require('axios').default;
-var bodyParser = require('body-parser');
+// var bodyParser = require('body-parser');
 
 const app = express()
-
-app.use(bodyParser.urlencoded({ extended: false }));
- app.use(bodyParser.json());
-
-// const mysql = require('mysql2')
+app.use(express.urlencoded({extended: true})); 
+app.use(express.json());
+// app.use(bodyParser.urlencoded({ extended: false }));
+// app.use(bodyParser.json());
 
 app.use(cors())
 app.use('',route)

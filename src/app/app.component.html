@@ -13,7 +13,7 @@
 			<!--<a routerLink="home" routerLinkActive="active" mat-button>HOME</a>-->
 			<a routerLink="map" routerLinkActive="active" mat-button>MAPPING</a>
 			<a routerLink="location" routerLinkActive="active" mat-button>ADD LOCATION</a>
-			<a *ngIf="authService.isAuthenticated()" (click)="authService.logout()" routerLinkActive="active" mat-button><mat-icon>logout</mat-icon></a>
+			<!--<a *ngIf="authService.isAuthenticated()" (click)="authService.logout()" routerLinkActive="active" mat-button><mat-icon>logout</mat-icon></a>-->
 		</div>
 	</mat-toolbar>
 	<mat-sidenav-container style="height: 100vh;">

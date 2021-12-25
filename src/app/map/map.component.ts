@@ -3,13 +3,13 @@ import { Component, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import * as L from 'leaflet';
 import { DataService } from '../services/data.service';
 import { environment } from 'src/environments/environment';
-import { OpenStreetMapProvider, GeoSearchControl } from 'leaflet-geosearch';
+// import { OpenStreetMapProvider, GeoSearchControl } from 'leaflet-geosearch';
 import { Router } from '@angular/router';
-const provider = new OpenStreetMapProvider();
-const searchControl = GeoSearchControl({
-	provider: provider,
-});
-import Geocoder from 'leaflet-control-geocoder';
+// const provider = new OpenStreetMapProvider();
+// const searchControl = GeoSearchControl({
+// 	provider: provider,
+// });
+// import Geocoder from 'leaflet-control-geocoder';
 
 
 import { Options } from "@angular-slider/ngx-slider";
@@ -99,7 +99,7 @@ export class MapComponent implements AfterViewInit {
 			attribution: 'OSM'
 		});
 		this.mainLayer.addTo(this.map);
-		this.map.addControl(searchControl);
+		// this.map.addControl(searchControl);
 
 		
 	}
@@ -417,6 +417,8 @@ export class MapComponent implements AfterViewInit {
 		this.createMap()
 		this.clusters = L.markerClusterGroup({});
 		let iconSize
+		console.log("aarrrrr", arr);
+		
 		arr.map(location => {
 			if (this.onCenter) iconSize = 20
 			else iconSize = 20 + location.occurence
@@ -437,7 +439,7 @@ export class MapComponent implements AfterViewInit {
 				}
 			)
 
-			this.marker.bindPopup(`<center><span>${location.city}</span><span> - </span><span>${location.country}</span></center><br><center><span>- ${location.occurence} -</span></center>`)
+			this.marker.bindPopup(`<center><span>${location.city}</span><span> - </span><span>${location.country}</span></center><br><center><span>Occurrence: ${location.occurence}</span> - <span>${location.fileName} </span></center>`)
 			this.markers.push(this.marker)
 			// this.map.setView([location.lat, location.lng],5)
 			this.clusters.addLayer(this.marker)

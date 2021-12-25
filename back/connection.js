@@ -10,9 +10,9 @@
 const mysql = require('mysql2')
 const pool = mysql.createPool({
     host            : 'eu-cdbr-west-02.cleardb.net',
-    user            : 'b902e319564c68',
-    password        : '59ece1ff',
-    database        : 'heroku_0ac3a151f58ad26',
+    user            : 'bef3683ac1a445',
+    password        : '4b20b87e',
+    database        : 'heroku_e380f9a3434d1e2',
 })
 
 pool.getConnection(function(err) {
@@ -20,8 +20,4 @@ pool.getConnection(function(err) {
     console.log("Database Connected!");
   });
 
-// Access Credentials
-// sorbonne-mapping-db
-// Host:        eu-cdbr-west-02.cleardb.net
-// Username:	b902e319564c68
-// Password:	59ece1ff (Reset)
+  module.exports = pool

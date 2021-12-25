@@ -5,7 +5,7 @@ import { LocationComponent } from './location/location.component';
 import { LoginComponent } from './login/login.component';
 import { MapComponent } from './map/map.component';
 import { NotFoundComponent } from './not-found/not-found.component';
-import { AuthGuard } from './services/auth.guard';
+// import { AuthGuard } from './services/auth.guard';
 const routes: Routes = [
   {path:'',pathMatch:'full',redirectTo:'map'},
   // {path:'login', component:LoginComponent},

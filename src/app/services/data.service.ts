@@ -16,7 +16,7 @@ export class DataService {
 		return this.http.get(`${environment.url}/cities`)
 	}
 
-	getCountries(){
+	getCountries(){		
 		return this.http.get(`${environment.url}/countries`)
 	}
 

@@ -1,17 +1,20 @@
 export const environment = {
   production: true,
-  firebaseConfig : {
-    apiKey: "AIzaSyCOe-nuSCubL6bd0WVKyJnLC2cx9rIMurw",
-    authDomain: "location-38ffa.firebaseapp.com",
-    projectId: "location-38ffa",
-    storageBucket: "location-38ffa.appspot.com",
-    messagingSenderId: "550942351568",
-    appId: "1:550942351568:web:c8fdf0c6159e4067d17ed5",
-    measurementId: "G-763ZVQQ8PP"
-  },
+  // firebaseConfig : {
+  //   apiKey: "AIzaSyCOe-nuSCubL6bd0WVKyJnLC2cx9rIMurw",
+  //   authDomain: "location-38ffa.firebaseapp.com",
+  //   projectId: "location-38ffa",
+  //   storageBucket: "location-38ffa.appspot.com",
+  //   messagingSenderId: "550942351568",
+  //   appId: "1:550942351568:web:c8fdf0c6159e4067d17ed5",
+  //   measurementId: "G-763ZVQQ8PP"
+  // },
   // url: 'http://vps783302.ovh.net:5555',
   //url_py: 'http://vps783302.ovh.net:5000',
   // url_py: 'http://localhost:5000'
-  url: 'http://localhost:5555',
+  // url: 'http://localhost:5555',
+  url: 'https://mapping-cartographique.herokuapp.com',
   url_py: 'http://localhost:5000'
 };
+
+
