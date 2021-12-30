@@ -113,14 +113,10 @@ export class LocationComponent implements AfterViewInit {
 
 	onSubmit(){
 		// Itération de la liste locations et envoyer chaque élément à la BDD
-		// console.log(this.locations);
-		let msg
+		console.log(this.locations);
 		this.locations.map(location => {
 			this.http.post(`${environment.url}/add-city`,location)
-			.subscribe((res:any) => {
-				msg = res.message
-			})
-			
+			.subscribe(res => res)
 		})
 		this.toastService.success("Les lieux ont été ajoutés!!!");
 		this.locations = []

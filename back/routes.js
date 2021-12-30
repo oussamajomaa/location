@@ -15,11 +15,12 @@ router.get('/cities',(req,res)=>{
 
 router.post('/add-city',(req,res) => {
     const lieu = req.body
-    mysql.query('INSERT INTO cities SET ?', lieu, (err, rows) => {
-        if (!err) {
-            res.send({ message: `Les lieux ont été ajoutés.`})
-        } else {
-            console.log(err)
+    mysql.query(`SELECT * from cities where city=? and country=?`,[lieu.city,lieu.country],(err,rows) => {
+        console.log('exist');
+        if (rows.length === 0){
+            mysql.query('INSERT INTO cities SET ?', lieu, (err, rows) => {
+                if (err) console.log(err)
+            })
         }
     })
 })
@@ -31,16 +32,7 @@ router.post('/add-city',(req,res) => {
 //     })
 // })
 
-router.post('/new_location',(req,res)=>{
-    // console.log(req.body)
-    // mysql.query('INSERT INTO countries SET ?', req.body, (err, rows) => {
-    //     if (!err) {
-    //         res.send({response:`${req.body.country} has been added.`})
-    //     } else {
-    //         console.log(err)
-    //     }
-    // })
-})
+
 
 router.get('/countries',(req,res) => {
     mysql.query('SELECT * from countries', (err,rows) => {

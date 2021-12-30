@@ -45,7 +45,7 @@
   }
 
 .slider{
-    height: 16vh;
+    height: 15vh;
 }
 
 .dropzone{
@@ -63,8 +63,10 @@
   }
 
   .dropzone img{
-      width: 100px;
+      width: 5vw;
   }
+
+ 
 
   .textArea{
       width: 100%;
@@ -97,7 +99,9 @@
     cursor: pointer;
   }
 
-
+.inputs{
+    height: 33vh;
+}
 
 @keyframes spin {
     0% { transform: rotate(0deg)}
@@ -108,7 +112,7 @@
 #map {
     position: relative;
     border: #17A2B8 1px solid;
-    height: 77vh;
+    height: 75vh;
   }
 
 .center-button{
@@ -137,7 +141,7 @@ h3, h2, label{
 
 .number-icon
 {
-    width: 24px !important;
+  width: 24px !important;
   height: 24px !important;
   margin-left: -12px;
   margin-top: -12px;

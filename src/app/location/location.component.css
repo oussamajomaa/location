@@ -1,7 +1,7 @@
 #mapLocation{
-  height: 80vh;
+  height: 85vh;
   width: 100%;
-  
+  border: #17A2B8 1px solid;
 }
 
 .add-location{
@@ -10,7 +10,6 @@
     width: 100%;
     margin: auto;
     margin-bottom: 10px;
-    background: rgb(238, 238, 238);
 }
 
 .add-location::-webkit-scrollbar {
