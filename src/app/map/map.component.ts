@@ -27,10 +27,10 @@ export class MapComponent implements AfterViewInit {
 	value: number = 5;
 	options: Options = {
 		showTicksValues: true,
-		stepsArray:[]
+		stepsArray: []
 	};
 
-	
+
 	clusters: L.MarkerClusterGroup
 	map: any
 	locations = []
@@ -81,27 +81,23 @@ export class MapComponent implements AfterViewInit {
 		this.dataService.getLocation().subscribe((res: any) => {
 			this.locations = res
 		})
-		this.dataService.getCountries()
-			.subscribe((res: any) => {
-				this.countries = res
-
-				this.loading = true
-			})
+		// this.dataService.getCountries()
+		// 	.subscribe((res: any) => {
+		// 		this.countries = res
+		// 		// this.loading = true
+		// 	})
 		this.createMap()
 	}
 
 	createMap(lat = 0, lng = 0, z = 2) {
 		this.map = L.map('map').setView([lat, lng], z);
-
 		this.mainLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 			minZoom: 1,
 			maxZoom: 20,
 			attribution: 'OSM'
 		});
 		this.mainLayer.addTo(this.map);
-		// this.map.addControl(searchControl);
-
-		
+		// this.map.addControl(searchControl);	
 	}
 
 
@@ -137,8 +133,6 @@ export class MapComponent implements AfterViewInit {
 		}
 	}
 
-
-
 	// Vider le textarea
 	clearText() {
 		this.duplicatedCities = []
@@ -169,7 +163,6 @@ export class MapComponent implements AfterViewInit {
 			if (this.text != "") {
 				this.http.get(`${environment.url_py}/text`, { params: { text: this.text } }).subscribe((res: any) => {
 					this.spacyList = res
-
 					this.identifyCity(this.spacyList)
 				})
 			}
@@ -177,6 +170,7 @@ export class MapComponent implements AfterViewInit {
 
 		if (this.uploadFile) {
 			this.clearText()
+			this.loading = true
 			const file: File = event.target.files[0];
 			// console.log('file ', file)
 			if (file) {
@@ -201,13 +195,13 @@ export class MapComponent implements AfterViewInit {
 
 					for (let key of this.groupeByList) {
 						let item = {
-							legend:key[0],
-							value:key[1][0].fileDate,
+							legend: key[0],
+							value: key[1][0].fileDate,
 						}
 						this.listOfText.push(item)
-						
+
 					}
-					
+
 					console.log("listOfText    **** ++++ *** ", this.listOfText);
 
 					// Regrouper les noms des fichiers dans la liste listOfText
@@ -216,16 +210,16 @@ export class MapComponent implements AfterViewInit {
 
 					for (let key of this.groupeByList) {
 						let item = {
-							value:key[0]
+							value: key[0]
 						}
 						this.listOfDate.push(item)
 					}
-					this.listOfDate = this.listOfDate.sort((a,b) => {
-							if (parseInt(a.value) > parseInt(b.value)) return 1
-							if (parseInt(a.value) < parseInt(b.value)) return -1
-							return 0
-						})
-					
+					this.listOfDate = this.listOfDate.sort((a, b) => {
+						if (parseInt(a.value) > parseInt(b.value)) return 1
+						if (parseInt(a.value) < parseInt(b.value)) return -1
+						return 0
+					})
+
 					this.options.stepsArray = this.listOfDate
 					console.log("listOfDate    **** ++++ *** ", this.options.stepsArray);
 
@@ -236,6 +230,7 @@ export class MapComponent implements AfterViewInit {
 	}
 
 	identifyCity(list: any = []) {
+		this.loading = false
 		const spacyLoc = list.map(entity => {
 			return entity.city
 		})
@@ -257,6 +252,7 @@ export class MapComponent implements AfterViewInit {
 				this.notFoundCities.push(item)
 			}
 		})
+
 
 		// ####################################################
 		// récupérer les lieux dupliqués et les mettre dans la list repeatedCities
@@ -287,7 +283,9 @@ export class MapComponent implements AfterViewInit {
 			this.places = this.notDuplicatedCities
 			this.displayOnMap()
 		}
-		else this.msg = "Aucun lieu trouvé !!!"
+		else {
+			this.msg = "Aucun lieu trouvé !!!"
+		}
 
 		list.forEach(item => {
 			this.notDuplicatedCities.forEach(location => {
@@ -319,7 +317,7 @@ export class MapComponent implements AfterViewInit {
 	}
 
 	displayOnMap() {
-		console.log("on center = ",this.onCenter);
+		console.log("on center = ", this.onCenter);
 		// this.onCenter = true
 		this.places.map(location => {
 			// return location.occurence = this.wordList.filter(word => word === location.city).length
@@ -350,9 +348,9 @@ export class MapComponent implements AfterViewInit {
 
 	//  Cette methode pour recentrer la carte selon les markers en cliquant sur le bouton centrer
 	onSelectText(text) {
-		console.log("on center = ",this.onCenter);
-		console.log("text selected ",this.textSelected);
-		console.log("date  ",text);
+		console.log("on center = ", this.onCenter);
+		console.log("text selected ", this.textSelected);
+		console.log("date  ", text);
 		this.onCenter = true
 		// this.dateSelected = date
 		this.textSelected = text
@@ -374,8 +372,8 @@ export class MapComponent implements AfterViewInit {
 	}
 
 	onSelectDate(date) {
-		console.log("text selected ",this.dateSelected);
-		console.log("date  ",date);
+		console.log("text selected ", this.dateSelected);
+		console.log("date  ", date);
 		this.onCenter = false
 		this.dateSelected = date
 		// this.textSelected = text
@@ -396,7 +394,7 @@ export class MapComponent implements AfterViewInit {
 
 	}
 
-	onSelectALl(){
+	onSelectALl() {
 		let arr = this.allNotDuplicatedCities
 
 		// Récupérer l'occurence de chaque lieu
@@ -418,7 +416,7 @@ export class MapComponent implements AfterViewInit {
 		this.clusters = L.markerClusterGroup({});
 		let iconSize
 		console.log("aarrrrr", arr);
-		
+
 		arr.map(location => {
 			if (this.onCenter) iconSize = 20
 			else iconSize = 20 + location.occurence
@@ -450,6 +448,37 @@ export class MapComponent implements AfterViewInit {
 			this.bounds = L.featureGroup(this.markers);
 			this.map.fitBounds(this.bounds.getBounds(), { padding: [0, 0] });
 		}
+	}
+
+	downloadFile(data: any,name:string) {
+		const replacer = (key, value) => (value === null ? '' : value); // specify how you want to handle null values here
+		const header = Object.keys(data[0]);
+		const csv = data.map((row) =>
+			header
+				.map((fieldName) => JSON.stringify(row[fieldName], replacer))
+				.join(',')
+		);
+		csv.unshift(header.join(','));
+		const csvArray = csv.join('\r\n');
+
+		const a = document.createElement('a');
+		const blob = new Blob([csvArray], { type: 'text/csv' });
+		const url = window.URL.createObjectURL(blob);
+
+		a.href = url;
+		a.download = name;
+		a.click();
+		window.URL.revokeObjectURL(url);
+		a.remove();
+	}
+
+	exportCSV(){
+		let found = []
+		this.foundCities.map(location => found.push({city:location.city,country:location.country}))
+		this.downloadFile(found,'reconnu')
+		let notFound = []
+		this.notFoundCities.map(location => notFound.push({city:location.city}))
+		this.downloadFile(notFound,'non_reconnu')
 	}
 }
 

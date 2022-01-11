@@ -1,4 +1,4 @@
-<div *ngIf="!loading" class="spinner"></div>
+
 <div class="row content ">
 	<div class="col-3  p-2">
 
@@ -50,7 +50,7 @@
 
 		<!-- Container to display List Location -->
 		<div class="row">
-			<div *ngIf="foundCities.length === 0 && fileName !=''" class="spinner"></div>
+			<div *ngIf="msg==='' && loading" class="spinner"></div>
 
 			<!-- Container to display confused location -->
 			<div class="col-7 py-3" *ngIf="duplicatedCities.length > 0">
@@ -79,7 +79,6 @@
 						<span class="danger p-1 my-1 rounded mat-elevation-z8 w-100 d-block">{{location.city}}</span>
 					</Div>
 				</div>
-
 			</div>
 		</div>
 	</div>
@@ -106,9 +105,15 @@
 		<div class="row slider d-flex items-align-center" *ngIf="foundCities.length > 0">
 			<div class="col mt-1 p-1">
 				<!-- Displays file name on button -->
-				<div class="d-flex justify-content-around">
-					<button mat-mini-fab class="light mb-1" (click)="onSelectALl()" color="primary" >ALL</button>
-					<div *ngIf="listOfText.length > 0" class="row" style="width: 90%;">
+				<div class="row">
+					<div class="col-2">
+						<button class="primary" mat-raised-button style="display: block; margin:auto; "
+								(click)="exportCSV()">Exporter en CSV</button>
+					</div>
+					<div class="col-1">
+						<button mat-mini-fab class="light mb-1" (click)="onSelectALl()" color="primary">ALL</button>
+					</div>
+					<div *ngIf="listOfText.length > 0" class="col-9" >
 						<button mat-raised-button *ngFor="let item of listOfText" 
 							(click)="onSelectText(item.legend)"
 							class="mx-1">
