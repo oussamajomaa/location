@@ -39,6 +39,7 @@ import { LeafletMarkerClusterModule } from '@asymmetrik/ngx-leaflet-markercluste
 import {MatTooltipModule} from '@angular/material/tooltip';
 import { NgxSliderModule } from '@angular-slider/ngx-slider';
 import { ToastrModule } from 'ngx-toastr';
+import { SideNavComponent } from './side-nav/side-nav.component';
 
 @NgModule({
   declarations: [
@@ -48,6 +49,7 @@ import { ToastrModule } from 'ngx-toastr';
     HomeComponent,
     LocationComponent,
     NotFoundComponent,
+    SideNavComponent,
   ],
   imports: [
     BrowserModule,

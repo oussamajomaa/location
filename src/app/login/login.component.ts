@@ -9,19 +9,23 @@ import { AuthService } from '../services/auth.service';
 })
 export class LoginComponent implements OnInit {
   hide = true;
-  user={
-    email:"",
-    password:""
-  }
+
+  email:string
+  password:string
+
   token:string
-  constructor(private authService:AuthService) { }
+  constructor(public auth:AuthService) { }
 
 	ngOnInit(): void {
 		
 	}
 
  	login(){
-		// this.authService.login(this.user)
+    const user = {
+      email:this.email,
+      password:this.password
+    }
+      this.auth.login(user)
   	}
 
 
