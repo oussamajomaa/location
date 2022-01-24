@@ -1,5 +1,4 @@
 date: 1998
-titre: les villes italiennes
  Rome, berceau de l'Italie antique
 
 2. Florence, berceau de la Renaissance

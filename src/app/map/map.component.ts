@@ -159,8 +159,9 @@ export class MapComponent implements AfterViewInit {
 		this.notDuplicatedCities = []
 		this.foundCities = []
 		this.msg = ""
-		if (this.textArea) {
-			if (this.text != "") {
+		if (this.textArea) {			
+			if (this.text) {
+				this.onCartographier = false
 				this.http.get(`${environment.url_py}/text`, { params: { text: this.text } }).subscribe((res: any) => {
 					this.spacyList = res
 					this.identifyCity(this.spacyList)
@@ -182,12 +183,15 @@ export class MapComponent implements AfterViewInit {
 				// Send file to Spacy and get response
 				this.http.post(`${environment.url_py}/file`, formData).subscribe((res: any) => {
 					this.spacyList = res
+					console.log('this.spacyList', this.spacyList)
 					// Récuperer les noms des fichiers traités
-					this.spacyList = this.spacyList.map(item => {
-						let splitUrl = item.fileName.split("/")
-						item.fileName = splitUrl[splitUrl.length - 1]
-						return item
-					})
+					// this.spacyList = this.spacyList.map(item => {
+					// 	let splitUrl = item.fileName.split("/")
+					// 	item.fileName = splitUrl[splitUrl.length - 1]
+					// 	return item
+					// })
+					// console.log('this.spacyList', this.spacyList)
+
 
 					// Regrouper les noms des fichiers dans la liste listOfText
 					this.groupeByList = this.groupBy(this.spacyList, item => item.fileName)
@@ -204,9 +208,8 @@ export class MapComponent implements AfterViewInit {
 
 					console.log("listOfText    **** ++++ *** ", this.listOfText);
 
-					// Regrouper les noms des fichiers dans la liste listOfText
+					// Regrouper les dates des fichiers dans la liste listOfDate
 					this.groupeByList = this.groupBy(this.spacyList, item => item.fileDate)
-					console.log("this.groupeByList is ", this.groupeByList)
 
 					for (let key of this.groupeByList) {
 						let item = {
@@ -231,12 +234,15 @@ export class MapComponent implements AfterViewInit {
 
 	identifyCity(list: any = []) {
 		this.loading = false
-		const spacyLoc = list.map(entity => {
+		// create list of spacy location
+		const spacyLocation = list.map(entity => {
 			return entity.city
 		})
-
+		
 		// convertir la liste des lieux en une chaîne de caractères
-		this.spacyText = spacyLoc.toString()
+		this.spacyText = spacyLocation.toString()
+		console.log('this.spacyText',this.spacyText);
+		
 		if (this.spacyText != "") {
 			// Itérer la liste des locations et chercher si une ville est existe dans la chaîne de caractères
 			this.locations.map(location => {
@@ -276,16 +282,6 @@ export class MapComponent implements AfterViewInit {
 			else this.duplicatedCities.push(location)
 		})
 
-		// ####################################################
-		// Afficher les villes non dupliquées
-		if (this.notDuplicatedCities.length > 0) {
-			// this.clusters = L.markerClusterGroup({});
-			this.places = this.notDuplicatedCities
-			this.displayOnMap()
-		}
-		else {
-			this.msg = "Aucun lieu trouvé !!!"
-		}
 
 		list.forEach(item => {
 			this.notDuplicatedCities.forEach(location => {
@@ -297,6 +293,20 @@ export class MapComponent implements AfterViewInit {
 				}
 			})
 		})
+		console.log('this.allNotDuplicatedCities', this.allNotDuplicatedCities);
+
+		// ####################################################
+		// Afficher les villes non dupliquées
+		if (this.notDuplicatedCities.length > 0) {
+			// this.clusters = L.markerClusterGroup({});
+			this.places = this.allNotDuplicatedCities
+			console.log('this.notDuplicatedCities', this.notDuplicatedCities);
+			
+			this.displayOnMap()
+		}
+		else {
+			this.msg = "Aucun lieu trouvé !!!"
+		}	
 	}
 
 	confirmLocation(event, id) {
@@ -317,7 +327,7 @@ export class MapComponent implements AfterViewInit {
 	}
 
 	displayOnMap() {
-		console.log("on center = ", this.onCenter);
+		// console.log("on center = ", this.onCenter);
 		// this.onCenter = true
 		this.places.map(location => {
 			// return location.occurence = this.wordList.filter(word => word === location.city).length
@@ -408,7 +418,7 @@ export class MapComponent implements AfterViewInit {
 
 	}
 
-	// Cette methode est pour ajouter les markers sur la carte
+	// Cette methode ajoute les markers sur la carte
 	getMarkers(arr: any = []) {
 		this.markers = []
 		if (this.map) this.map.remove()
@@ -450,6 +460,7 @@ export class MapComponent implements AfterViewInit {
 		}
 	}
 
+	// methode pour créer un fichier csv
 	downloadFile(data: any,name:string) {
 		const replacer = (key, value) => (value === null ? '' : value); // specify how you want to handle null values here
 		const header = Object.keys(data[0]);
@@ -472,6 +483,7 @@ export class MapComponent implements AfterViewInit {
 		a.remove();
 	}
 
+	// Sauvegarder les ambigus et les lieus non reconnus dans deux fichier csv
 	exportCSV(){
 		let found = []
 		this.foundCities.map(location => found.push({city:location.city,country:location.country}))

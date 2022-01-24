@@ -204,6 +204,7 @@ def process():
        
     uploaded_file = request.files['file']
     filename = secure_filename(uploaded_file.filename)
+    title =""
     if filename != '':
         file_ext = os.path.splitext(filename)[1]
         if file_ext not in app.config['UPLOAD_EXTENSIONS']:
@@ -225,22 +226,23 @@ def process():
             for extractedFile in extractedFiles:
                 f = open(extractedFile, "r")
                 contents = f.readlines()
- 
-                # Lire la première ligne du texte et récupérer la date en ignorant la case sensitive
-                if 'date' in contents[0]:
+                if 'date' in contents[0] and 'titre' in contents[0]:
                     # .strip() to remove space before and after string
+                    fileDate = contents[0].split("-")[0].split(":")[1].strip()
+                    title = contents[0].split("-")[1].split(":")[1].strip()
+                elif 'date' in contents[0]:
                     fileDate = contents[0].split(":")[1].strip()
+                    title = extractedFile.split('/')[-1].split('.')[0]
+                elif 'titre' in contents[0]:
+                    title = contents[0].split(":")[1].strip()
+                    fileDate = 1900
                 else:
-                    fileDate = "1900"
+                    title = extractedFile.split('/')[-1].split('.')[0]
+                    fileDate = 1900
+            
                 print(fileDate)
-                if len(contents) > 1:
-                    if 'titre' in contents[1]:
-                        title = contents[1].split(":")[1].strip()
-                    else:
-                        title = extractedFile
-                    print(title)
-                else:
-                    title = extractedFile
+                print(title)
+                
  
                 contents = " ".join(contents)
                 wikitext = nlp(contents)
@@ -259,24 +261,24 @@ def process():
             f = open(baseUrl+"/uploads/"+filename, "r")
             print(baseUrl)
             contents = f.readlines()
- 
-             # Lire la première ligne du texte et récupérer la date en ignorant la case sensitive
-            if 'date' in contents[0]:
+            
+            if 'date' in contents[0] and 'titre' in contents[0]:
                 # .strip() to remove space before and after string
+                fileDate = contents[0].split("-")[0].split(":")[1].strip()
+                title = contents[0].split("-")[1].split(":")[1].strip()
+            elif 'date' in contents[0]:
                 fileDate = contents[0].split(":")[1].strip()
-            else:
-                fileDate = "1900"
-            print(fileDate)
- 
-            if len(contents) > 1:
-                if 'titre' in contents[1]:
-                    # .strip() to remove space before and after string
-                    title = contents[1].split(":")[1].strip()
-                else:
-                    title = filename
-                print(title)
+                title = filename
+            elif 'titre' in contents[0]:
+                title = contents[0].split(":")[1].strip()
+                fileDate = 1900
             else:
                 title = filename
+                fileDate = 1900
+           
+            print(fileDate)
+            print(title)
+            
  
             # transform list into string
             contents = " ".join(contents)
@@ -298,6 +300,9 @@ def process():
  
 if __name__ == '__main__':
     app.run(debug=True)
+    # app.run('0.0.0.0',debug=True, ssl_context=('cert.pem','key.pem'))
+
+    # app.run(port=5000,debug=True)
     # from waitress import serve
     # serve(app, host="0.0.0.0", port=5000)
     # app.run(debug=True)
