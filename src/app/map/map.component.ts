@@ -13,6 +13,7 @@ import { Router } from '@angular/router';
 
 
 import { Options } from "@angular-slider/ngx-slider";
+import { FunctionsService } from '../services/functions.service';
 
 
 @Component({
@@ -22,7 +23,7 @@ import { Options } from "@angular-slider/ngx-slider";
 })
 export class MapComponent implements AfterViewInit {
 
-	// @ViewChild('myInput') myInputVariable: ElementRef;
+	@ViewChild('myInput') myInput: ElementRef;
 
 	value: number = 5;
 	options: Options = {
@@ -43,18 +44,19 @@ export class MapComponent implements AfterViewInit {
 	geojson: any
 	text: string
 	foundCities = []
-	notFoundCities = []
-	duplicatedCities = []
-	notDuplicatedCities = []
-	allNotDuplicatedCities = []
-	foundCountries = []
+	notFoundCities: any = []
+	duplicatedCities: any = []
+	notDuplicatedCities: any = []
+	allNotDuplicatedCities: any = []
+	foundCountries: any = []
+	arr: any = []
 	file: any;
 	msg: string
 	polyline: any
 	cities = []
 	ids = []
 	bounds: any
-	places = []
+	places: any = []
 	wordList = []
 	fileName = '';
 	spacyList = []
@@ -68,12 +70,15 @@ export class MapComponent implements AfterViewInit {
 	textSelected = ""
 	dateSelected = ""
 	allCities = []
+	noRepeatedCities: any = []
+	notFoundRepeatedCities: any = []
 	onCenter = false
 	onCartographier = true
 	constructor(
 		private dataService: DataService,
 		private http: HttpClient,
-		private router: Router
+		private router: Router,
+		private fs: FunctionsService
 
 	) { }
 
@@ -81,11 +86,6 @@ export class MapComponent implements AfterViewInit {
 		this.dataService.getLocation().subscribe((res: any) => {
 			this.locations = res
 		})
-		// this.dataService.getCountries()
-		// 	.subscribe((res: any) => {
-		// 		this.countries = res
-		// 		// this.loading = true
-		// 	})
 		this.createMap()
 	}
 
@@ -97,10 +97,49 @@ export class MapComponent implements AfterViewInit {
 			attribution: 'OSM'
 		});
 		this.mainLayer.addTo(this.map);
+
+		const Stadia_AlidadeSmooth = L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png', {
+			maxZoom: 20,
+			attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
+		});
+
+		const OpenStreetMap_France = L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
+			maxZoom: 20,
+			attribution: '&copy; OpenStreetMap France | &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+		});
+
+		const OpenTopoMap = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+			maxZoom: 17,
+			attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+		});
+
+		const Esri_WorldImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+			attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+		});
+
+		const Esri_NatGeoWorldMap = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}', {
+			attribution: 'Tiles &copy; Esri &mdash; National Geographic, Esri, DeLorme, NAVTEQ, UNEP-WCMC, USGS, NASA, ESA, METI, NRCAN, GEBCO, NOAA, iPC',
+			maxZoom: 16
+		});
+		// leaflet layer control
+		const baseMaps = {
+			'Stadia_AlidadeSmooth': Stadia_AlidadeSmooth,
+			'OpenStreetMap_France': OpenStreetMap_France,
+			'OpenTopoMap': OpenTopoMap,
+			'Esri_WorldImagery': Esri_WorldImagery,
+			'Esri_NatGeoWorldMap': Esri_NatGeoWorldMap
+		}
+
+
+
+		var marker = L.markerClusterGroup()
+		const overlayMaps = {
+			'GeoJson Markers': marker
+		}
+
+		L.control.layers(baseMaps).addTo(this.map)
 		// this.map.addControl(searchControl);	
 	}
-
-
 
 
 	// geoJson(url: string, country: string) {
@@ -112,25 +151,16 @@ export class MapComponent implements AfterViewInit {
 	// }
 
 
-
-
-	// 
-
+	isClicked = true
 	onSelectTextArea(e) {
-		if (e.target.checked === true) {
-			this.textArea = true
-			this.uploadFile = false
-			this.onCartographier = true
-		}
+		this.textArea = true
+		this.onCartographier = true
 		this.clearText()
 	}
 
 	onSelectUploadFile(e) {
 		this.clearText()
-		if (e.target.checked === true) {
-			this.textArea = false
-			this.uploadFile = true
-		}
+		this.textArea = false
 	}
 
 	// Vider le textarea
@@ -155,11 +185,15 @@ export class MapComponent implements AfterViewInit {
 		this.createMap()
 	}
 
+
 	sendToSpacy(event) {
+
+		this.notFoundRepeatedCities = []
 		this.notDuplicatedCities = []
 		this.foundCities = []
+		this.noRepeatedCities = []
 		this.msg = ""
-		if (this.textArea) {			
+		if (this.textArea) {
 			if (this.text) {
 				this.onCartographier = false
 				this.http.get(`${environment.url_py}/text`, { params: { text: this.text } }).subscribe((res: any) => {
@@ -169,65 +203,56 @@ export class MapComponent implements AfterViewInit {
 			}
 		}
 
-		if (this.uploadFile) {
+		if (!this.textArea) {
 			this.clearText()
 			this.loading = true
 			const file: File = event.target.files[0];
-			// console.log('file ', file)
+			this.myInput.nativeElement.value = ""
+
 			if (file) {
-				this.fileName = file.name
-				const formData = new FormData();
-				formData.append("name", file.name);
-				formData.append("file", file, file.name);
+				if (file.size < 450000) {
+					this.fileName = file.name
+					const formData = new FormData();
+					formData.append("name", file.name);
+					formData.append("file", file, file.name);
 
-				// Send file to Spacy and get response
-				this.http.post(`${environment.url_py}/file`, formData).subscribe((res: any) => {
-					this.spacyList = res
-					console.log('this.spacyList', this.spacyList)
-					// Récuperer les noms des fichiers traités
-					// this.spacyList = this.spacyList.map(item => {
-					// 	let splitUrl = item.fileName.split("/")
-					// 	item.fileName = splitUrl[splitUrl.length - 1]
-					// 	return item
-					// })
-					// console.log('this.spacyList', this.spacyList)
+					// Send file to Spacy and get response
+					this.http.post(`${environment.url_py}/file`, formData).subscribe((res: any) => {
+						this.spacyList = res
+						// Regrouper les noms des fichiers dans la liste listOfText
+						this.groupeByList = this.fs.groupBy(this.spacyList, item => item.fileName)
 
+						for (let key of this.groupeByList) {
+							let item = {
+								legend: key[0],
+								value: key[1][0].fileDate,
+							}
+							this.listOfText.push(item)
 
-					// Regrouper les noms des fichiers dans la liste listOfText
-					this.groupeByList = this.groupBy(this.spacyList, item => item.fileName)
-					console.log("this.groupeByList is ", this.groupeByList)
-
-					for (let key of this.groupeByList) {
-						let item = {
-							legend: key[0],
-							value: key[1][0].fileDate,
 						}
-						this.listOfText.push(item)
 
-					}
+						// Regrouper les dates des fichiers dans la liste listOfDate
+						this.groupeByList = this.fs.groupBy(this.spacyList, item => item.fileDate)
 
-					console.log("listOfText    **** ++++ *** ", this.listOfText);
-
-					// Regrouper les dates des fichiers dans la liste listOfDate
-					this.groupeByList = this.groupBy(this.spacyList, item => item.fileDate)
-
-					for (let key of this.groupeByList) {
-						let item = {
-							value: key[0]
+						for (let key of this.groupeByList) {
+							let item = {
+								value: key[0]
+							}
+							this.listOfDate.push(item)
 						}
-						this.listOfDate.push(item)
-					}
-					this.listOfDate = this.listOfDate.sort((a, b) => {
-						if (parseInt(a.value) > parseInt(b.value)) return 1
-						if (parseInt(a.value) < parseInt(b.value)) return -1
-						return 0
+						this.listOfDate = this.listOfDate.sort((a, b) => {
+							if (parseInt(a.value) > parseInt(b.value)) return 1
+							if (parseInt(a.value) < parseInt(b.value)) return -1
+							return 0
+						})
+						this.options.stepsArray = this.listOfDate
+						this.identifyCity(this.spacyList)
 					})
-
-					this.options.stepsArray = this.listOfDate
-					console.log("listOfDate    **** ++++ *** ", this.options.stepsArray);
-
-					this.identifyCity(this.spacyList)
-				})
+				}
+				else {
+					this.myInput.nativeElement.value = ""
+					alert('file too large')
+				}
 			}
 		}
 	}
@@ -238,11 +263,10 @@ export class MapComponent implements AfterViewInit {
 		const spacyLocation = list.map(entity => {
 			return entity.city
 		})
-		
+
 		// convertir la liste des lieux en une chaîne de caractères
 		this.spacyText = spacyLocation.toString()
-		console.log('this.spacyText',this.spacyText);
-		
+
 		if (this.spacyText != "") {
 			// Itérer la liste des locations et chercher si une ville est existe dans la chaîne de caractères
 			this.locations.map(location => {
@@ -258,6 +282,10 @@ export class MapComponent implements AfterViewInit {
 				this.notFoundCities.push(item)
 			}
 		})
+
+		if (this.notFoundCities.length > 1) {
+			this.fs.sortListObject(this.notFoundCities)
+		}
 
 
 		// ####################################################
@@ -283,6 +311,10 @@ export class MapComponent implements AfterViewInit {
 		})
 
 
+		if (this.duplicatedCities.length > 1) {
+			this.fs.sortListObject(this.duplicatedCities)
+		}
+
 		list.forEach(item => {
 			this.notDuplicatedCities.forEach(location => {
 				if (item.city === location.city) {
@@ -293,139 +325,149 @@ export class MapComponent implements AfterViewInit {
 				}
 			})
 		})
-		console.log('this.allNotDuplicatedCities', this.allNotDuplicatedCities);
+
+		if (this.allNotDuplicatedCities.length > 1) {
+			this.fs.sortListObject(this.allNotDuplicatedCities)
+		}
+
+
+		let nrc = this.fs.groupBy(this.allNotDuplicatedCities, item => item.city)
+		for (let key of nrc) {
+			let item = {
+				city: key[0],
+				country: key[1][0].country
+			}
+			this.noRepeatedCities.push(item)
+		}
+		this.fs.getOccurence(this.noRepeatedCities,this.spacyList)
+
+		let nfc = this.fs.groupBy(this.notFoundCities, item => item.city)
+		for (let key of nfc) {
+			let item = {
+				city: this.fs.toCamelCase(key[0]),
+			}
+			this.notFoundRepeatedCities.push(item)
+		}
+
+		this.fs.sortListObject(this.notFoundRepeatedCities)
+
 
 		// ####################################################
 		// Afficher les villes non dupliquées
 		if (this.notDuplicatedCities.length > 0) {
-			// this.clusters = L.markerClusterGroup({});
 			this.places = this.allNotDuplicatedCities
-			console.log('this.notDuplicatedCities', this.notDuplicatedCities);
-			
 			this.displayOnMap()
 		}
 		else {
 			this.msg = "Aucun lieu trouvé !!!"
-		}	
+		}
 	}
 
+	confirmedLocation = []
 	confirmLocation(event, id) {
 		this.onCenter = false
 		if (event.target.checked) {
 			let loc = this.locations.filter(location => {
 				return location.id === parseInt(id)
 			})
-			console.log(loc[0]);
-			console.log(this.places);
+			let item = loc[0]
 
-			this.places.push(loc[0])
-			console.log(this.places);
+			this.spacyList.forEach(element => {
+				if (element.city === item.city) {
+					item.fileDate = element.fileDate
+					item.fileName = element.fileName
+				}
+
+			})
+
+			this.allNotDuplicatedCities.push(item)
+			this.fs.sortListObject(this.allNotDuplicatedCities)
+			this.confirmedLocation.push(item)
+			this.noRepeatedCities = []
+			let nrc = this.fs.groupBy(this.allNotDuplicatedCities, item => item.city)
+			for (let key of nrc) {
+				let item = {
+					city: key[0],
+					country: key[1][0].country
+				}
+				this.noRepeatedCities.push(item)
+				this.fs.sortListObject(this.noRepeatedCities)				
+				this.fs.getOccurence(this.noRepeatedCities,this.spacyList)
+			}
 		}
+
 		if (!event.target.checked) {
 			this.places = this.places.filter(location => location.id !== parseInt(id))
+			this.confirmedLocation = this.confirmedLocation.filter(location => location.id !== parseInt(id))
+			this.allNotDuplicatedCities = this.allNotDuplicatedCities.filter(location => location.id !== parseInt(id))
 		}
 	}
 
+	onFirsteCenter=true
 	displayOnMap() {
-		// console.log("on center = ", this.onCenter);
-		// this.onCenter = true
-		this.places.map(location => {
-			// return location.occurence = this.wordList.filter(word => word === location.city).length
-			return location.occurence = this.spacyList.filter(item => item.city.match("\\b" + location.city + "\\b")).length
-		})
-
+		this.onFirsteCenter=true
+		this.fs.getOccurence(this.allNotDuplicatedCities,this.spacyList)
 		this.markers = []
 		if (this.clusters) this.clusters.clearLayers()
-		// this.map.removeLayer(this.clusters)
 		this.getMarkers(this.places)
-	}
 
-
-	// Cette methode va regrouper la liste selon le nom du fichier
-	groupBy(list, keyGetter) {
-		const map = new Map();
-		list.forEach((item) => {
-			const key = keyGetter(item);
-			const collection = map.get(key);
-			if (!collection) {
-				map.set(key, [item]);
-			} else {
-				collection.push(item);
-			}
-		});
-		return map;
+		// remove location from confused list
+		this.confirmedLocation.forEach((element) => {
+			let index = this.duplicatedCities.indexOf(element)
+			this.duplicatedCities.splice(index, 1)
+		})
+		this.confirmedLocation = []
 	}
 
 	//  Cette methode pour recentrer la carte selon les markers en cliquant sur le bouton centrer
 	onSelectText(text) {
-		console.log("on center = ", this.onCenter);
-		console.log("text selected ", this.textSelected);
-		console.log("date  ", text);
+		this.onFirsteCenter=true
 		this.onCenter = true
-		// this.dateSelected = date
 		this.textSelected = text
-
 		let arr = []
 		this.allNotDuplicatedCities.filter(place => {
 			if (place.fileName === this.textSelected) arr.push(place)
 		})
 
 		// Récupérer l'occurence de chaque lieu
-		arr.map(location => {
-			return location.occurence = this.spacyList.filter(item => item.city.match("\\b" + location.city + "\\b")).length
-		})
-		console.log(arr);
-
-		this.clusters.clearLayers()
+		this.fs.getOccurence(arr,this.spacyList)
+		if (this.clusters) this.clusters.clearLayers()
 		this.getMarkers(arr)
-
 	}
 
 	onSelectDate(date) {
-		console.log("text selected ", this.dateSelected);
-		console.log("date  ", date);
+		this.onFirsteCenter=false
 		this.onCenter = false
 		this.dateSelected = date
-		// this.textSelected = text
-
 		let arr = []
 		this.allNotDuplicatedCities.filter(place => {
 			if (place.fileDate === this.dateSelected) arr.push(place)
 		})
 
 		// Récupérer l'occurence de chaque lieu
-		arr.map(location => {
-			return location.occurence = this.spacyList.filter(item => item.city.match("\\b" + location.city + "\\b")).length
-		})
-		console.log(arr);
-
-		this.clusters.clearLayers()
+		this.fs.getOccurence(arr,this.spacyList)
+		if (this.clusters) this.clusters.clearLayers()
 		this.getMarkers(arr)
-
 	}
 
 	onSelectALl() {
 		let arr = this.allNotDuplicatedCities
-
+		// this.onFirsteCenter=true
 		// Récupérer l'occurence de chaque lieu
-		arr.map(location => {
-			return location.occurence = this.spacyList.filter(item => item.city.match("\\b" + location.city + "\\b")).length
-		})
-		console.log(arr);
+		this.fs.getOccurence(arr,this.spacyList)
 
-		this.clusters.clearLayers()
+		if (this.clusters) this.clusters.clearLayers()
 		this.getMarkers(arr)
-
 	}
 
 	// Cette methode ajoute les markers sur la carte
-	getMarkers(arr: any = []) {
+	getMarkers(arr: any[]) {
+		// this.fs.getMarkers(arr=arr,this.markers,this.map,this.clusters,L,this.onCenter,this.marker,this.bounds)
 		this.markers = []
 		if (this.map) this.map.remove()
 		this.createMap()
 		this.clusters = L.markerClusterGroup({});
 		let iconSize
-		console.log("aarrrrr", arr);
 
 		arr.map(location => {
 			if (this.onCenter) iconSize = 20
@@ -443,7 +485,6 @@ export class MapComponent implements AfterViewInit {
 							html: "<h1>hello</h1>",
 						}
 					),
-
 				}
 			)
 
@@ -460,330 +501,8 @@ export class MapComponent implements AfterViewInit {
 		}
 	}
 
-	// methode pour créer un fichier csv
-	downloadFile(data: any,name:string) {
-		const replacer = (key, value) => (value === null ? '' : value); // specify how you want to handle null values here
-		const header = Object.keys(data[0]);
-		const csv = data.map((row) =>
-			header
-				.map((fieldName) => JSON.stringify(row[fieldName], replacer))
-				.join(',')
-		);
-		csv.unshift(header.join(','));
-		const csvArray = csv.join('\r\n');
-
-		const a = document.createElement('a');
-		const blob = new Blob([csvArray], { type: 'text/csv' });
-		const url = window.URL.createObjectURL(blob);
-
-		a.href = url;
-		a.download = name;
-		a.click();
-		window.URL.revokeObjectURL(url);
-		a.remove();
-	}
-
 	// Sauvegarder les ambigus et les lieus non reconnus dans deux fichier csv
-	exportCSV(){
-		let found = []
-		this.foundCities.map(location => found.push({city:location.city,country:location.country}))
-		this.downloadFile(found,'reconnu')
-		let notFound = []
-		this.notFoundCities.map(location => notFound.push({city:location.city}))
-		this.downloadFile(notFound,'non_reconnu')
+	exportCSV() {
+		this.fs.exportCSV(this.noRepeatedCities,this.notFoundRepeatedCities)
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	// ##################################################################
-
-
-// arr.map(location => {
-		// 	this.marker = L.marker([location.lat, location.lng],
-		// 		{
-		// 			icon: new L.Icon(
-		// 				{
-		// 					iconUrl: 'assets/icons/circle_blue.png',
-		// 					// iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-icon.png',
-		// 					iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-icon-2x.png',
-		// 					iconSize: [20 , 20 ],
-		// 					iconAnchor: [6, 10],
-		// 					popupAnchor: [5, -10],
-		// 				}
-		// 			)
-		// 		}
-		// 	)
-
-		// 	this.marker.bindPopup(`<center><span>${location.word}</span><span>--</span><span>${location.country}</span></center>`)
-		// 	this.markers.push(this.marker)
-		// 	// this.map.setView([location.lat, location.lng],5)
-		// 	this.clusters.addLayer(this.marker)
-		// 	this.map.addLayer(this.clusters)
-		// })
-		// // Contenir tous les markers sur la carte
-		// if (this.markers.length > 1) {
-		// 	console.log(this.places);
-		// 	this.bounds = L.featureGroup(this.markers);
-		// 	console.log(this.bounds);
-		// 	this.map.fitBounds(this.bounds.getBounds(), { padding: [0, 0] });
-		// }
-
-// this.places.map(location => {
-		// 	this.marker = L.marker([location.lat, location.lng],
-		// 		{
-		// 			icon: new L.Icon(
-		// 				{
-		// 					iconUrl: 'assets/icons/circle_blue.png',
-		// 					// iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-icon.png',
-		// 					iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-icon-2x.png',
-		// 					// iconSize: [20 + location.occurence, 20 + location.occurence],
-		// 					iconSize: [20 , 20],
-		// 					iconAnchor: [6, 10],
-		// 					popupAnchor: [5, -10],
-		// 				}
-		// 			)
-		// 		}
-		// 	)
-
-		// 	this.marker.bindPopup(`<center><span>${location.city}</span><span>--</span><span>${location.country}</span></center>`)
-		// 	this.markers.push(this.marker)
-		// 	// this.map.setView([location.lat, location.lng],5)
-		// 	this.clusters.addLayer(this.marker)
-		// 	this.map.addLayer(this.clusters)
-		// })
-		// // Contenir tous les markers sur la carte
-		// if (this.markers.length > 1) {
-		// 	console.log(this.places);
-		// 	this.bounds = L.featureGroup(this.markers);
-		// 	console.log(this.bounds);
-		// 	this.map.fitBounds(this.bounds.getBounds(), { padding: [0, 0] });
-		// }
-
-// onUploadFile(event) {
-	// 	this.foundCities = []
-	// 	const file: File = event.target.files[0];
-	// 	if (file) {
-	// 		this.fileName = file.name;
-	// 		const formData = new FormData();
-	// 		formData.append("name", file.name);
-	// 		formData.append("file", file, file.name);
-
-	// 		// Send file to Spacy and get response
-	// 		this.http.post(`${environment.url_py}/file`, formData).subscribe((res: any) => {
-	// 			// Filter location only
-	// 			this.spacyList = res.filter(entity => {
-	// 				return entity.label === "LOC"
-	// 			})
-	// 			console.log(this.spacyList)
-	// 			// Get location name only
-	// 			this.spacyList = this.spacyList.map(entity => {
-	// 				return entity.word
-	// 			})
-	// 			console.log(this.spacyList)
-
-	// 			// convert list to string
-	// 			this.spacyText = this.spacyList.toString()
-	// 			console.log(this.spacyText);
-
-	// 			if (this.spacyText != "") {
-	// 				this.locations.map(location => {
-	// 					// Chercher une ville dans text
-	// 					let cityRegex = new RegExp("\\b" + location.city + "\\b")
-	// 					// Chercher un pays dans text
-	// 					let countryRegex = new RegExp("\\b" + location.country + "\\b")
-	// 					if (this.spacyText.match(new RegExp(cityRegex, 'g'))) {
-	// 						this.foundCities.push(location)
-	// 					}
-	// 					if (this.spacyText.match(new RegExp(countryRegex, 'g'))) {
-	// 						if (!this.foundCountries.find(country => location.country === country))
-	// 							this.foundCountries.push(location.country)
-	// 					}
-	// 				})
-	// 			}
-	// 			//Call the method geoJson to hilight country
-	// 			this.foundCountries.map(country => {
-	// 				this.geoJson('assets/data/countries.json', country)
-	// 			})
-	// 			if (this.map) this.map.remove()
-
-	// 			if (this.markers.length > 0) {
-	// 				this.markers.map(marker => this.map.removeLayer(marker))
-	// 			}
-
-	// 			if (this.foundCities.length > 0) {
-	// 				this.createMap(0, 0, 2)
-	// 				this.clusters = L.markerClusterGroup({
-	// 				});
-	// 			}
-	// 			else {
-	// 				this.createMap(0, 0, 2)
-	// 				this.msg = "Aucun lieu trouvé !!!"
-	// 			}
-	// 		})
-	// 	}
-	// }
-
-
-
-	// findCityInText() {
-	// 	console.log('this.ids', this.ids);
-	// 	this.foundCities = []
-	// 	this.places = []
-	// 	this.foundCountries = []
-	// 	this.markers = []
-	// 	// console.log(this.text);
-
-	// 	if (this.text) {
-	// 		this.wordList = this.text.split(' ')
-	// 		console.log("wordList: ", this.wordList);
-
-	// 		this.locations.map(location => {
-	// 			// Chercher une ville dans text
-	// 			let cityRegex = new RegExp("\\b" + location.city + "\\b")
-	// 			// Chercher un pays dans text
-	// 			let countryRegex = new RegExp("\\b" + location.country + "\\b")
-	// 			if (this.text.match(new RegExp(cityRegex, 'g'))) {
-	// 				this.foundCities.push(location)
-	// 			}
-	// 			// if (this.text.match(new RegExp(countryRegex, 'g'))) {
-	// 			// 	if (!this.foundCountries.find(country => location.country === country))
-	// 			// 		this.foundCountries.push(location.country)
-	// 			// }
-	// 		})
-	// 	}
-
-	// 	// console.log('this.foundCities ', this.foundCities);
-
-	// 	// //Call the method geoJson to hilight country
-	// 	// this.foundCountries.map(country => {
-	// 	// 	this.geoJson('assets/data/countries.json', country)
-	// 	// })
-
-	// 	if (this.map) this.map.remove()
-
-	// 	if (this.markers.length > 0) {
-	// 		this.markers.map(marker => this.map.removeLayer(marker))
-	// 	}
-
-	// 	if (this.foundCities.length > 0) {
-	// 		this.createMap(0, 0, 2)
-	// 		// console.log('Paris ',this.foundCities);
-	// 		// if (this.foundCities.length === 1)
-	// 		// 	this.createMap(this.foundCities[0]['lat'], this.foundCities[0]['lng'],10)
-	// 		// if (this.foundCities.length > 1)
-	// 		// 	this.createMap(this.foundCities[0]['lat'], this.foundCities[0]['lng'],2)
-	// 		// this.msg = ''
-
-	// 		// // test cluster groupe
-	// 		this.clusters = L.markerClusterGroup({
-	// 		});
-	// 	}
-	// 	else {
-	// 		this.createMap(0, 0, 2)
-	// 		this.msg = "Aucun lieu trouvé !!!"
-	// 	}
-	// }
-
-
-	// confirmCity() {
-
-
-	// 	console.log('this.ids', this.ids);
-
-	// 	// Get ids from location when choosing city and mapping ids array to find every city and push it in cities array
-	// 	this.cities = this.ids.map(i => {
-	// 		console.log('iiiiiiiiiiiii', i);
-	// 		return (this.locations.find(location => location.id === parseInt(i)))
-	// 	})
-
-	// 	// remove markers when unselecting city
-	// 	if (this.markers.length > 0) {
-	// 		this.markers.map(marker => this.map.removeLayer(marker))
-	// 	}
-
-	// 	// remove the line when unselecting city
-	// 	if (this.polyline)
-	// 		this.map.removeLayer(this.polyline)
-
-	// 	// Ajouter les markers sur la carte
-	// 	const c = []
-	// 	this.cities.map(location => {
-	// 		this.marker = L.marker([location.lat, location.lng], { icon: this.smallIcon })
-	// 		this.marker.addTo(this.map).bindPopup(`<center><h3>${location.city}</h3><h2>${location.country}</h2></center>`)
-	// 		this.markers.push(this.marker)
-
-	// 		let x = location.lat
-	// 		let y = location.lng
-	// 		c.push([x, y])
-	// 	})
-
-	// 	// relier les markers avec une ligne
-	// 	this.polyline = L.polyline(c)
-	// 	this.polyline.addTo(this.map)
-
-	// 	// Empty input file
-	// 	this.myInputVariable.nativeElement.value = ''
-	// 	// this.clearText()
-
-	// }
-
-
-	// changeCountry() {
-	// 	// supprimer l'ancienne carte
-	// 	if (this.map) this.map.remove()
-
-	// 	// supprimer les anciens markers
-	// 	if (this.markers.length > 0) {
-	// 		this.markers.map(marker => this.map.removeLayer(marker))
-	// 	}
-
-	// 	// filtrer les coordonnées selon un pays choisi
-	// 	this.coords = this.locations.filter(res => res.country === this.country)
-
-	// 	// créer la carte
-	// 	this.createMap(this.coords[0]['lat'], this.coords[0]['lng'], 4)
-	// 	this.geoJson('assets/data/countries.json', this.country)
-
-	// }
-
-
-	// Cette méthode est pour lire un fichier text télécharger dans le navigateur
-	// fileUpload(e) {
-	// 	console.log(e.target.files[0].name);
-	// 	const extension = (e.target.files[0].name).split('.').pop()
-	// 	console.log(extension);
-	// 	this.markers = []
-	// 	// remove markers when unselecting city
-	// 	if (this.markers.length > 0) {
-	// 		this.markers.map(marker => this.map.removeLayer(marker))
-	// 	}
-
-	// 	if (extension === 'txt') {
-	// 		this.file = e.target.files[0];
-	// 		let fileReader = new FileReader();
-	// 		fileReader.onload = () => {
-	// 			this.text = fileReader.result as string
-	// 		}
-	// 		fileReader.readAsText(this.file);
-	// 	}
-	// 	// e.target.value=null
-
-	// }
-
-

@@ -20,8 +20,19 @@
 }
 
 
+#map {
+    position: relative;
+    border: #17A2B8 1px solid;
+    height: 70vh;
+  }
+
+  .slider{
+    height: 20vh;
+}
+
+
 .height1{
-    height: 40vh;
+    height: 28vh;
     overflow-y: scroll;
     width: 100%;
     margin: auto;
@@ -29,7 +40,7 @@
 }
 
 .height2{
-    height: 40vh;
+    height: 28vh;
     overflow-y: scroll;
     width: 100%;
     margin: auto;
@@ -44,20 +55,17 @@
     width: 1px;   
   }
 
-.slider{
-    height: 15vh;
-}
+
 
 .dropzone{
     width: 100% ;
-    height: 25vh;
+    height: 24vh;
     position: relative;
     /* border: solid 1px black; */
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-
     margin-bottom: 10px;
     
   }
@@ -66,12 +74,23 @@
       width: 5vw;
   }
 
- 
+ .buttons{
+     height: 7vh;
+ }
+
+ .carto{
+     height: 5%;
+ }
 
   .textArea{
       width: 100%;
-      height: 25vh;
+      height: 20vh;
   }
+
+  .textArea textarea{
+    height: 19vh;
+}
+
 
   input[type='radio']:checked:after {
     width: 15px;
@@ -93,7 +112,7 @@
     position: absolute;
     z-index: 2;
     width: 80%;
-    height: 5vh;
+    /* height: 5vh; */
     top: 0;
     left: 0;
     cursor: pointer;
@@ -103,17 +122,22 @@
     height: 33vh;
 }
 
+.selects{
+    height: 12vh;
+}
+
+.clicked{
+    font-weight: bolder;
+    color: yellow;
+}
+
 @keyframes spin {
     0% { transform: rotate(0deg)}
     100% { transform: rotate(-360deg);}
 }
 
 
-#map {
-    position: relative;
-    border: #17A2B8 1px solid;
-    height: 75vh;
-  }
+
 
 .center-button{
     position: absolute;
@@ -127,7 +151,7 @@ textarea
 {
     width:100%;
     padding:10px; 
-    height:18vh;
+    /* height:18vh; */
     border: none;
     box-shadow: rgba(255, 255, 255, 0.2) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0.9) 0px 0px 0px 1px;
     margin-bottom: 10px;

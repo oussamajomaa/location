@@ -226,10 +226,20 @@ def process():
             for extractedFile in extractedFiles:
                 f = open(extractedFile, "r")
                 contents = f.readlines()
+
+                fileDate = 1900
+                title = extractedFile.split('/')[-1].split('.')[0]
                 if 'date' in contents[0] and 'titre' in contents[0]:
-                    # .strip() to remove space before and after string
-                    fileDate = contents[0].split("-")[0].split(":")[1].strip()
-                    title = contents[0].split("-")[1].split(":")[1].strip()
+                    date_title=contents[0].split("-")
+                    print('date titlelllll****      ' + str(len(date_title)))
+                    if len(date_title) == 2:
+                        # .strip() to remove space before and after string
+                        if len(date_title[0].split(":")) == 2:
+                            print(len(date_title))
+                            fileDate = date_title[0].split(":")[1].strip()
+                        if len(date_title[1].split(":")) == 2:
+                            title = date_title[1].split(":")[1].strip()
+
                 elif 'date' in contents[0]:
                     fileDate = contents[0].split(":")[1].strip()
                     title = extractedFile.split('/')[-1].split('.')[0]
@@ -261,11 +271,19 @@ def process():
             f = open(baseUrl+"/uploads/"+filename, "r")
             print(baseUrl)
             contents = f.readlines()
-            
+            fileDate = 1900
+            title = filename
             if 'date' in contents[0] and 'titre' in contents[0]:
-                # .strip() to remove space before and after string
-                fileDate = contents[0].split("-")[0].split(":")[1].strip()
-                title = contents[0].split("-")[1].split(":")[1].strip()
+                date_title=contents[0].split("-")
+                print('date titlelllll****      ' + str(len(date_title)))
+                if len(date_title) == 2:
+                    # .strip() to remove space before and after string
+                    if len(date_title[0].split(":")) == 2:
+                        print(len(date_title))
+                        fileDate = date_title[0].split(":")[1].strip()
+                    if len(date_title[1].split(":")) == 2:
+                        title = date_title[1].split(":")[1].strip()
+
             elif 'date' in contents[0]:
                 fileDate = contents[0].split(":")[1].strip()
                 title = filename
@@ -276,10 +294,7 @@ def process():
                 title = filename
                 fileDate = 1900
            
-            print(fileDate)
-            print(title)
             
- 
             # transform list into string
             contents = " ".join(contents)
             results = []
