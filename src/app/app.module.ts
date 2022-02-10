@@ -40,6 +40,7 @@ import {MatTooltipModule} from '@angular/material/tooltip';
 import { NgxSliderModule } from '@angular-slider/ngx-slider';
 import { ToastrModule } from 'ngx-toastr';
 import { SideNavComponent } from './side-nav/side-nav.component';
+import { AboutComponent } from './about/about.component';
 
 @NgModule({
   declarations: [
@@ -50,6 +51,7 @@ import { SideNavComponent } from './side-nav/side-nav.component';
     LocationComponent,
     NotFoundComponent,
     SideNavComponent,
+    AboutComponent,
   ],
   imports: [
     BrowserModule,

@@ -3,14 +3,7 @@ import { Component, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import * as L from 'leaflet';
 import { DataService } from '../services/data.service';
 import { environment } from 'src/environments/environment';
-// import { OpenStreetMapProvider, GeoSearchControl } from 'leaflet-geosearch';
 import { Router } from '@angular/router';
-// const provider = new OpenStreetMapProvider();
-// const searchControl = GeoSearchControl({
-// 	provider: provider,
-// });
-// import Geocoder from 'leaflet-control-geocoder';
-
 
 import { Options } from "@angular-slider/ngx-slider";
 import { FunctionsService } from '../services/functions.service';
@@ -30,7 +23,6 @@ export class MapComponent implements AfterViewInit {
 		showTicksValues: true,
 		stepsArray: []
 	};
-
 
 	clusters: L.MarkerClusterGroup
 	map: any
@@ -130,8 +122,6 @@ export class MapComponent implements AfterViewInit {
 			'Esri_NatGeoWorldMap': Esri_NatGeoWorldMap
 		}
 
-
-
 		var marker = L.markerClusterGroup()
 		const overlayMaps = {
 			'GeoJson Markers': marker
@@ -140,15 +130,6 @@ export class MapComponent implements AfterViewInit {
 		L.control.layers(baseMaps).addTo(this.map)
 		// this.map.addControl(searchControl);	
 	}
-
-
-	// geoJson(url: string, country: string) {
-	// 	this.http.get(url).subscribe((res: any) => {
-	// 		this.geojson = res
-	// 		this.geojson = this.geojson.features.filter(data => data.properties['ADMIN'] === country)
-	// 		L.geoJSON(this.geojson).addTo(this.map)
-	// 	})
-	// }
 
 
 	isClicked = true
@@ -179,15 +160,16 @@ export class MapComponent implements AfterViewInit {
 		this.fileName = ""
 		this.listOfDate = []
 		this.listOfText = []
+		this.notFoundRepeatedCities = []
+		this.noRepeatedCities = []
 		// this.rangevalue = 0
 		this.onCartographier = true
 		if (this.map) this.map.remove()
 		this.createMap()
 	}
 
-
+	isTooLarge = false
 	sendToSpacy(event) {
-
 		this.notFoundRepeatedCities = []
 		this.notDuplicatedCities = []
 		this.foundCities = []
@@ -209,53 +191,67 @@ export class MapComponent implements AfterViewInit {
 			const file: File = event.target.files[0];
 			this.myInput.nativeElement.value = ""
 
-			if (file) {
-				if (file.size < 450000) {
+			if (file) {		
+				if (file.type === "text/plain" && file.size < 450000){
 					this.fileName = file.name
 					const formData = new FormData();
 					formData.append("name", file.name);
 					formData.append("file", file, file.name);
-
-					// Send file to Spacy and get response
-					this.http.post(`${environment.url_py}/file`, formData).subscribe((res: any) => {
-						this.spacyList = res
-						// Regrouper les noms des fichiers dans la liste listOfText
-						this.groupeByList = this.fs.groupBy(this.spacyList, item => item.fileName)
-
-						for (let key of this.groupeByList) {
-							let item = {
-								legend: key[0],
-								value: key[1][0].fileDate,
-							}
-							this.listOfText.push(item)
-
-						}
-
-						// Regrouper les dates des fichiers dans la liste listOfDate
-						this.groupeByList = this.fs.groupBy(this.spacyList, item => item.fileDate)
-
-						for (let key of this.groupeByList) {
-							let item = {
-								value: key[0]
-							}
-							this.listOfDate.push(item)
-						}
-						this.listOfDate = this.listOfDate.sort((a, b) => {
-							if (parseInt(a.value) > parseInt(b.value)) return 1
-							if (parseInt(a.value) < parseInt(b.value)) return -1
-							return 0
-						})
-						this.options.stepsArray = this.listOfDate
-						this.identifyCity(this.spacyList)
-					})
+					this.sendFormData(formData)
 				}
 				else {
-					this.myInput.nativeElement.value = ""
-					alert('file too large')
+					if (file.type === "application/zip" && file.size < 100000){
+						this.fileName = file.name
+						const formData = new FormData();
+						formData.append("name", file.name);
+						formData.append("file", file, file.name);
+						this.sendFormData(formData)
+					}
+					else{
+						// this.isTooLarge = true
+						this.myInput.nativeElement.value = ""
+						alert('file too large')
+					}
 				}
 			}
 		}
 	}
+
+	sendFormData(formData:any){
+		// Send file to Spacy and get response
+		this.http.post(`${environment.url_py}/file`, formData).subscribe((res: any) => {
+			this.spacyList = res
+			// Regrouper les noms des fichiers dans la liste listOfText
+			this.groupeByList = this.fs.groupBy(this.spacyList, item => item.fileName)
+
+			for (let key of this.groupeByList) {
+				let item = {
+					legend: key[0],
+					value: key[1][0].fileDate,
+				}
+				this.listOfText.push(item)
+
+			}
+
+			// Regrouper les dates des fichiers dans la liste listOfDate
+			this.groupeByList = this.fs.groupBy(this.spacyList, item => item.fileDate)
+
+			for (let key of this.groupeByList) {
+				let item = {
+					value: key[0]
+				}
+				this.listOfDate.push(item)
+			}
+			this.listOfDate = this.listOfDate.sort((a, b) => {
+				if (parseInt(a.value) > parseInt(b.value)) return 1
+				if (parseInt(a.value) < parseInt(b.value)) return -1
+				return 0
+			})
+			this.options.stepsArray = this.listOfDate
+			this.identifyCity(this.spacyList)
+		})
+	}
+
 
 	identifyCity(list: any = []) {
 		this.loading = false
@@ -380,7 +376,13 @@ export class MapComponent implements AfterViewInit {
 
 			})
 
+			
+			// this.duplicatedCities = this.duplicatedCities.filter(location => {
+			// 	return location.city !== item.city
+			// })
+
 			this.allNotDuplicatedCities.push(item)
+		
 			this.fs.sortListObject(this.allNotDuplicatedCities)
 			this.confirmedLocation.push(item)
 			this.noRepeatedCities = []
@@ -395,12 +397,14 @@ export class MapComponent implements AfterViewInit {
 				this.fs.getOccurence(this.noRepeatedCities,this.spacyList)
 			}
 		}
+		// this.displayOnMap()
 
 		if (!event.target.checked) {
 			this.places = this.places.filter(location => location.id !== parseInt(id))
 			this.confirmedLocation = this.confirmedLocation.filter(location => location.id !== parseInt(id))
 			this.allNotDuplicatedCities = this.allNotDuplicatedCities.filter(location => location.id !== parseInt(id))
 		}
+		
 	}
 
 	onFirsteCenter=true
@@ -411,10 +415,14 @@ export class MapComponent implements AfterViewInit {
 		if (this.clusters) this.clusters.clearLayers()
 		this.getMarkers(this.places)
 
+		
 		// remove location from confused list
 		this.confirmedLocation.forEach((element) => {
-			let index = this.duplicatedCities.indexOf(element)
-			this.duplicatedCities.splice(index, 1)
+			this.duplicatedCities= this.duplicatedCities.filter(location => {
+				return location.city != element.city
+			})
+			// let index = this.duplicatedCities.indexOf(element)
+			// this.duplicatedCities.splice(index, 1)
 		})
 		this.confirmedLocation = []
 	}
@@ -506,3 +514,26 @@ export class MapComponent implements AfterViewInit {
 		this.fs.exportCSV(this.noRepeatedCities,this.notFoundRepeatedCities)
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// geoJson(url: string, country: string) {
+	// 	this.http.get(url).subscribe((res: any) => {
+	// 		this.geojson = res
+	// 		this.geojson = this.geojson.features.filter(data => data.properties['ADMIN'] === country)
+	// 		L.geoJSON(this.geojson).addTo(this.map)
+	// 	})
+	// }

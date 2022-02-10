@@ -6,13 +6,14 @@
 			</button>
 		</div>
 		<a mat-button class="companyName" routerLink="/">
-			<img src="assets/icons/obtic.svg" width="50" alt="">
+			<img src="assets/icons/obtic.svg" width="50" alt=""> <span class="ml-2 h6">Tanagra Mapping Tool</span>
 		</a>
 		<span class="example-spacer"></span>
 		<div fxShow="true" fxHide.lt-md="true">
 			<!--<a routerLink="home" routerLinkActive="active" mat-button>HOME</a>-->
-			<a routerLink="map" routerLinkActive="active" mat-button>MAPPING</a>
+			<a routerLink="" routerLinkActive="active" mat-button>MAPPING</a>
 			<a routerLink="location" routerLinkActive="active" mat-button>ADD LOCATION</a>
+			<a routerLink="about" routerLinkActive="active" mat-button>ABOUT</a>
 			<a *ngIf="auth.isAuthenticated()" (click)="auth.logout()" routerLinkActive="active" mat-button><mat-icon>logout</mat-icon></a>
 		</div>
 	</mat-toolbar>
@@ -21,8 +22,10 @@
 			<div fxLayout="column">
 				<!--<a routerLink="home" routerLinkActive="active" (click)="sidenav.toggle()" mat-button>HOME</a>
 				<a routerLink="login" routerLinkActive="active" (click)="sidenav.toggle()" mat-button>LOGIN</a>-->
-				<a routerLink="map" routerLinkActive="active" (click)="sidenav.toggle()" mat-button>MAPPING</a>
+				<a routerLink="" routerLinkActive="active" (click)="sidenav.toggle()" mat-button>MAPPING</a>
 				<a routerLink="location" routerLinkActive="active" (click)="sidenav.toggle()" mat-button>ADD LOCATION</a>
+				<a routerLink="about" routerLinkActive="active" (click)="sidenav.toggle()" mat-button>ABOUT</a>
+				<a *ngIf="auth.isAuthenticated()" (click)="auth.logout()" routerLinkActive="active" mat-button><mat-icon>logout</mat-icon></a>
 			</div>
 		</mat-sidenav>
 		<mat-sidenav-content>

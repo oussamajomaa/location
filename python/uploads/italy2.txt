@@ -1,4 +1,5 @@
-date: 1998
+date:
+title: Venise
  Rome, berceau de l'Italie antique
 
 2. Florence, berceau de la Renaissance
