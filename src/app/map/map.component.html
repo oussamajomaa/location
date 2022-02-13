@@ -1,17 +1,9 @@
-<div class="row content ">
-	<div class="col-3">
-		<!-- Container to display Input file or Text editor -->
+<div class="content ">
+	<div class="file">
 
-		<!-- Container to display Radio Buttom -->
+		<!-- Container to display two Buttom -->
 		<div class="d-flex justify-content-between mb-3 buttons ">
-			<!-- Two Raio Button to select Text or File -->
-			<!-- <label class="primary p-2 rounded" for="saisir_text" style="width: 45%;">
-						<input type="radio" checked style="margin-right: 5px;" name="optradio" id="saisir_text"
-							mat-raised-button (click)="onSelectTextArea($event)">Saisir un texte</label>
 
-					<label class="primary p-2 rounded" for="upload_file" style="width: 45%;">
-						<input type="radio" style="margin-right: 5px;" name="optradio" id="upload_file"
-							(click)="onSelectUploadFile($event)">Charger un fichier</label> -->
 			<button mat-raised-button [ngClass]="{'clicked': textArea}" style="width: 45%;" class="primary py-2"
 				(click)="onSelectTextArea($event)">Saisir un text</button>
 			<button mat-raised-button [ngClass]="{'clicked': !textArea}" class="primary py-2" style="width: 45%;"
@@ -33,6 +25,7 @@
 			</div>
 		</div>
 
+		<!-- Container to displayupload file -->
 		<div *ngIf="!textArea" style="cursor: pointer;">
 			<label for="fileDropReff" class="dropzone mat-elevation-z8 info" style="cursor: pointer;">
 				<img src="assets/icons/upload.png" alt="" class="mb-1">
@@ -46,7 +39,8 @@
 			</label>
 		</div>
 
-		<h4 class="text-center danger rounded my-1 msg">{{msg}}</h4>
+		<h4 *ngIf="noRepeatedCities.length === 0 && notFoundRepeatedCities.length === 0 && multiDuplicatedCities.length === 0"
+			class="text-center danger rounded my-1 msg">{{msg}}</h4>
 
 
 		<!-- Container to display List Location -->
@@ -70,27 +64,15 @@
 					</mat-option>
 				</mat-select>
 			</div>
-
-			<!-- Container to display unknown location -->
-			<!--<div class="col-5 py-3" *ngIf="notFoundCities.length > 0">
-				<h3 class="text-center white mb-2 mat-elevation-z8 rounded py-2"
-					style="display: block; margin:auto;  width:100%">Lieux non reconnus dans la BDD</h3>
-				<div [ngClass]="{'rounded height2' :textArea, 'rounded height1' :!textArea}">
-					<Div *ngFor="let location of notFoundCities;" class="my-1">
-						<span class="danger p-1 my-1 rounded mat-elevation-z8 w-100 d-block">{{location.city}}</span>
-					</Div>
-				</div>
-			</div>-->
-
-
 		</div>
+
 		<!-- Container to display confused location -->
-		<div *ngIf="duplicatedCities.length > 0" style="height: 38vh;">
+		<div *ngIf="duplicatedCities.length > 0" class="confused">
 			<div class="">
 				<h3 class="text-center white mb-2 mat-elevation-z8 rounded py-2 w-100"
 					style="display: block; margin:auto;  width:100%">Lieux ambigus</h3>
 				<div [ngClass]="{'rounded height2' :textArea, 'rounded height1' :!textArea}">
-					<Div *ngFor="let location of duplicatedCities; let i=index">
+					<!--<Div *ngFor="let location of duplicatedCities; let i=index" >
 						<label for="checkbox{{i}}" class="danger p-1 my-1 rounded mat-elevation-z8"
 							style="display: block; margin:auto;  width:100%; margin-bottom:5px">
 							<input type="checkbox" id="checkbox{{i}}" (click)="confirmLocation($event,location.id)">
@@ -98,30 +80,47 @@
 								{{location.city}} - {{location.country}}
 							</span>
 						</label>
+					</Div>-->
+					<Div *ngFor="let dups of multiDuplicatedCities; let j=index" style="border-bottom: 2px solid black;">
+						<div *ngFor="let location of dups; let i=index" >
+							
+							<div class="danger p-1 my-1 rounded mat-elevation-z8">
+								<input	type="radio" 
+										name="radio{{j}}" 
+										value="{{location.city}}" 
+										id="checkbox{{i}}"
+										(click)="confirmLocation($event,location.id)">
+								<span class="ml-1">
+									{{location.city}} - {{location.country}}
+								</span>
+							</div>
+						
+						</div>
+						
+
+
 					</Div>
 				</div>
-				<div class="divider"></div>
-				<div style="height: 5%vh" class="d-flex justify-content-between">
-					<button	class="primary rounded mat-elevation-z4 p-2" 
-							style="border: none; width:100%;"
-							(click)="displayOnMap()">Afficher sur la carte
-					</button>
-				</div>
+
+			</div>
+			<div class="d-flex justify-content-between afficher-btn">
+				<button class="primary rounded mat-elevation-z4 p-2" style="border: none; width:100%;"
+					*ngIf="duplicatedCities.length > 0" (click)="displayOnMap()">Afficher sur la carte
+				</button>
 			</div>
 		</div>
-		<div >
-			<button	class="light warning rounded mat-elevation-z4 p-2" 
-					style="border: none; width:100%; margin-top:2px"
-					*ngIf="notFoundRepeatedCities.length > 0 || noRepeatedCities.length > 0"
-					(click)="exportCSV()">Exporter en CSV
+		<div class="export-btn">
+			<button class="light warning rounded mat-elevation-z4 p-2" style="border: none; width:100%; margin-top:2px"
+				*ngIf="notFoundRepeatedCities.length > 0 || noRepeatedCities.length > 0" (click)="exportCSV()">Exporter
+				en CSV
 			</button>
 		</div>
 	</div>
 
 
-	<div class="col-9">
+	<div class="map">
 		<!-- Container to display MAP -->
-		<div class="row" id="map">
+		<div class="row" id="map" [ngStyle]="{'height':textArea ? '90vh':'70vh'}">
 			<!-- Center Icon -->
 
 			<!-- Afficher le bouton "centrer" en cas de "selecetionner un nom du fichier" -->

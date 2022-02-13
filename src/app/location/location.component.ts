@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
 
-import { AfterViewInit, Component } from '@angular/core';
+import { AfterViewInit, Component, HostListener } from '@angular/core';
 import { DataService } from '../services/data.service';
 import * as L from 'leaflet';
 import { ActivatedRoute } from '@angular/router';
@@ -31,6 +31,7 @@ export class LocationComponent implements AfterViewInit {
 	id_country: number
 	geojson: any
 	mainLayer: any
+	width = window.innerWidth
 
 	constructor(
 		private dataService: DataService,
@@ -38,6 +39,15 @@ export class LocationComponent implements AfterViewInit {
 		private route: ActivatedRoute,
 		private toastService: ToastrService,
 	) {
+	}
+
+	@HostListener('window:resize', ['$event'])
+
+	onResize(event) {
+
+		this.width = window.innerWidth;
+		console.log(this.width);
+		
 	}
 
 	ngAfterViewInit(): void {
@@ -50,6 +60,7 @@ export class LocationComponent implements AfterViewInit {
 		// fin ** Récupératin tous les pays **
 		this.createMap()
 		this.getLatLng()
+
 
 	}
 

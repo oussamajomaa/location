@@ -2,7 +2,7 @@
     <!-- <div *ngIf="!loading" class="spinner"></div>-->
 
     <!-- Container to display map-->
-    <div id="mapLocation" class="col-lg-6 col-sm-12">
+    <div id="mapLocation" class="col-lg-6 col-sm-12 mb-3" [ngStyle]="{'height':width>990 ? '70vh':'50vh'}">
         <h6 class="click">Click on the map to get location</h6>
     </div>
 

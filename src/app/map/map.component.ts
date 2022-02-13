@@ -147,6 +147,7 @@ export class MapComponent implements AfterViewInit {
 	// Vider le textarea
 	clearText() {
 		this.duplicatedCities = []
+		this.multiDuplicatedCities = []
 		this.notFoundCities = []
 		this.foundCities = []
 		this.notDuplicatedCities = []
@@ -252,7 +253,7 @@ export class MapComponent implements AfterViewInit {
 		})
 	}
 
-
+	multiDuplicatedCities :any = []
 	identifyCity(list: any = []) {
 		this.loading = false
 		// create list of spacy location
@@ -311,6 +312,15 @@ export class MapComponent implements AfterViewInit {
 			this.fs.sortListObject(this.duplicatedCities)
 		}
 
+
+		if (this.duplicatedCities.length > 1){
+			let nrc = this.fs.groupBy(this.duplicatedCities, item => item.city)
+			for (let key of nrc) {
+				this.multiDuplicatedCities.push(key[1])
+			}
+		}
+
+		
 		list.forEach(item => {
 			this.notDuplicatedCities.forEach(location => {
 				if (item.city === location.city) {
@@ -361,30 +371,35 @@ export class MapComponent implements AfterViewInit {
 
 	confirmedLocation = []
 	confirmLocation(event, id) {
+		
 		this.onCenter = false
 		if (event.target.checked) {
 			let loc = this.locations.filter(location => {
 				return location.id === parseInt(id)
 			})
 			let item = loc[0]
-
+		
+			// Add fileDate and fileName to object item
 			this.spacyList.forEach(element => {
 				if (element.city === item.city) {
 					item.fileDate = element.fileDate
 					item.fileName = element.fileName
 				}
-
 			})
-
 			
-			// this.duplicatedCities = this.duplicatedCities.filter(location => {
-			// 	return location.city !== item.city
-			// })
-
+			this.allNotDuplicatedCities = this.allNotDuplicatedCities.filter(location => {
+				return location.city != item.city
+			})
 			this.allNotDuplicatedCities.push(item)
+			
 		
 			this.fs.sortListObject(this.allNotDuplicatedCities)
+
+			this.confirmedLocation = this.confirmedLocation.filter(location => {
+				return location.city != item.city
+			})
 			this.confirmedLocation.push(item)
+
 			this.noRepeatedCities = []
 			let nrc = this.fs.groupBy(this.allNotDuplicatedCities, item => item.city)
 			for (let key of nrc) {
@@ -399,11 +414,11 @@ export class MapComponent implements AfterViewInit {
 		}
 		// this.displayOnMap()
 
-		if (!event.target.checked) {
-			this.places = this.places.filter(location => location.id !== parseInt(id))
-			this.confirmedLocation = this.confirmedLocation.filter(location => location.id !== parseInt(id))
-			this.allNotDuplicatedCities = this.allNotDuplicatedCities.filter(location => location.id !== parseInt(id))
-		}
+		// if (!event.target.checked) {
+		// 	this.places = this.places.filter(location => location.id !== parseInt(id))
+		// 	this.confirmedLocation = this.confirmedLocation.filter(location => location.id !== parseInt(id))
+		// 	this.allNotDuplicatedCities = this.allNotDuplicatedCities.filter(location => location.id !== parseInt(id))
+		// }
 		
 	}
 
@@ -413,7 +428,7 @@ export class MapComponent implements AfterViewInit {
 		this.fs.getOccurence(this.allNotDuplicatedCities,this.spacyList)
 		this.markers = []
 		if (this.clusters) this.clusters.clearLayers()
-		this.getMarkers(this.places)
+		this.getMarkers(this.allNotDuplicatedCities)
 
 		
 		// remove location from confused list
@@ -424,6 +439,13 @@ export class MapComponent implements AfterViewInit {
 			// let index = this.duplicatedCities.indexOf(element)
 			// this.duplicatedCities.splice(index, 1)
 		})
+		this.multiDuplicatedCities = []
+		if (this.duplicatedCities.length > 1){
+			let nrc = this.fs.groupBy(this.duplicatedCities, item => item.city)
+			for (let key of nrc) {
+				this.multiDuplicatedCities.push(key[1])
+			}
+		}
 		this.confirmedLocation = []
 	}
 

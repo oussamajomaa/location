@@ -13,7 +13,7 @@
 }
 
 .content{
-    height: 93vh;
+    /* height: 93vh; */
     padding-left: 15px;
     padding-right: 18px;
     padding-top: 15px;
@@ -32,7 +32,7 @@
 
 
 .height1{
-    height: 25vh;
+    height: 150px;
     overflow-y: scroll;
     width: 100%;
     margin: auto;
@@ -40,7 +40,7 @@
 }
 
 .height2{
-    height: 25vh;
+    height: 150px;
     overflow-y: scroll;
     width: 100%;
     margin: auto;
@@ -59,7 +59,7 @@
 
 .dropzone{
     width: 100% ;
-    height: 24vh;
+    height: 200px;
     position: relative;
     /* border: solid 1px black; */
     display: flex;
@@ -71,11 +71,11 @@
   }
 
   .dropzone img{
-      width: 5vw;
+      height: 70px;
   }
 
  .buttons{
-     height: 7vh;
+     height: 64px;
  }
 
  .carto{
@@ -84,15 +84,15 @@
 
   .textArea{
       width: 100%;
-      height: 20vh;
+      height:200px;
   }
 
-  .textArea textarea{
-    height: 19vh;
+  textarea{
+    height: 190px;
 }
 
 
-  input[type='radio']:checked:after {
+  /* input[type='radio']:checked:after {
     width: 15px;
     height: 15px;
     border-radius: 15px;
@@ -103,7 +103,7 @@
     content: '';
     display: inline-block;
     visibility: visible;
-}
+} */
 
 
 
@@ -112,19 +112,14 @@
     position: absolute;
     z-index: 2;
     width: 80%;
-    /* height: 5vh; */
     top: 0;
     left: 0;
     cursor: pointer;
   }
 
-.inputs{
-    height: 33vh;
-}
 
-.selects{
-    height: 12vh;
-}
+
+
 
 .clicked{
     font-weight: bolder;
@@ -151,7 +146,6 @@ textarea
 {
     width:100%;
     padding:10px; 
-    /* height:18vh; */
     border: none;
     box-shadow: rgba(255, 255, 255, 0.2) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0.9) 0px 0px 0px 1px;
     margin-bottom: 10px;
@@ -178,4 +172,72 @@ h3, h2, label{
   z-index: 10000;
 }
 
+.confused{
+    height: 200px;
+}
+
+
+
+.file{
+    width: 29%;
+    position: relative;
+}
+.map{
+    width: 69%
+}
+
+.export-btn{
+    position: absolute;
+    bottom: 5px;
+}
+
+.content{
+    display: flex;
+    justify-content: space-between;
+}
+
 /* slider css */
+/* @media (min-width:7679px){
+    .content{
+        flex-direction: row;
+    }
+    .file{
+        width: 69%;
+    }
+    .map{
+        width: 29%
+    }
+} */
+@media (max-width:1024px){
+    .content{
+        flex-direction: column;
+    }
+    .file{
+        width: 100%;
+    }
+    .map{
+        width: 100%
+    }
+    .slider,.height1,.height2,.inputs,.selects,.confused, .textArea{
+        height: auto;
+    }
+    #map{
+        height: 768px;
+        margin: 5px;
+
+    }
+    .slider{
+        margin-bottom: 100px;
+    }
+    textArea{
+        height: 200px;
+    }
+    .height1,.height2{
+        height: 200px;
+    }
+    .export-btn{
+        position: relative;
+        margin-top: 10px;
+    }
+}
+

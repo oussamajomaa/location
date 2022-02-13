@@ -1,6 +1,8 @@
 
 # Difference
 from spacy.lang.fr.examples import sentences
+from spacy import displacy 
+
 import fr_core_news_md
 nlp = fr_core_news_md.load()
 # ###
@@ -24,18 +26,23 @@ app.config['UPLOAD_PATH'] = 'uploads'
 @app.route('/text')
 def index():
     results = []
-    print(request.args.get('text'))
-    wikitext = nlp(request.args.get('text'))
+    text = request.args.get('text')
+    wikitext = nlp(text)
+    # print(displacy.render(wikitext, style="ent"))
     for word in wikitext.ents:
+        print(word.text, word.start_char, word.end_char, word.label_)
         item = {
             'city':word.text,
             'label':word.label_
         }
+        print(word.label_, word.text)
         if word.label_ == "LOC":
             results.append(item)
+        
  
     return json.dumps(results)
  
+
 @app.route('/file', methods=['POST'])
 def process():
     # Get the base of path
@@ -130,7 +137,7 @@ def process():
                     'city':word.text,
                     'label':word.label_
                 }
- 
+                print(word.label_, word.text)
                 if word.label_ == "LOC":
                     results.append(item)
 

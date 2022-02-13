@@ -9,10 +9,10 @@ import { MapComponent } from './map/map.component';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { AuthGuard } from './services/auth.guard';
 const routes: Routes = [
-  // {path:'',pathMatch:'full',redirectTo:'map'},
+  {path:'',pathMatch:'full',redirectTo:'map'},
   {path:'login', component:LoginComponent},
   // {path:'home', component:HomeComponent},
-  {path:'', component:MapComponent},
+  {path:'map', component:MapComponent},
   {path:'location', component:LocationComponent, canActivate:[AuthGuard]},
   {path:'about', component:AboutComponent},
   { path: '**', component: NotFoundComponent },
