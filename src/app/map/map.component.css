@@ -32,7 +32,7 @@
 
 
 .height1{
-    height: 150px;
+    height: 300px;
     overflow-y: scroll;
     width: 100%;
     margin: auto;
@@ -40,7 +40,7 @@
 }
 
 .height2{
-    height: 150px;
+    height: 300px;
     overflow-y: scroll;
     width: 100%;
     margin: auto;
@@ -59,19 +59,21 @@
 
 .dropzone{
     width: 100% ;
-    height: 200px;
+    height: 150px;
     position: relative;
     /* border: solid 1px black; */
     display: flex;
+    /* justify-content: space-around; */
     flex-direction: column;
     justify-content: center;
     align-items: center;
     margin-bottom: 10px;
+
     
   }
 
   .dropzone img{
-      height: 70px;
+      height: 64px;
   }
 
  .buttons{
@@ -82,14 +84,14 @@
      height: 5%;
  }
 
-  .textArea{
+  /* .textArea{
       width: 100%;
       height:200px;
   }
 
   textarea{
     height: 190px;
-}
+} */
 
 
   /* input[type='radio']:checked:after {
@@ -172,9 +174,9 @@ h3, h2, label{
   z-index: 10000;
 }
 
-.confused{
+/* .confused{
     height: 200px;
-}
+} */
 
 
 
@@ -186,10 +188,9 @@ h3, h2, label{
     width: 69%
 }
 
-.export-btn{
+/* .export-btn{
     position: absolute;
-    bottom: 5px;
-}
+} */
 
 .content{
     display: flex;
@@ -218,7 +219,7 @@ h3, h2, label{
     .map{
         width: 100%
     }
-    .slider,.height1,.height2,.inputs,.selects,.confused, .textArea{
+    .slider,.height1,.height2,.inputs,.selects, .textArea{
         height: auto;
     }
     #map{

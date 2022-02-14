@@ -175,6 +175,13 @@ export class MapComponent implements AfterViewInit {
 		this.notDuplicatedCities = []
 		this.foundCities = []
 		this.noRepeatedCities = []
+		this.duplicatedCities = []
+		this.multiDuplicatedCities = []
+		this.notFoundCities = []
+		this.allNotDuplicatedCities = []
+		this.markers = []
+		if (this.clusters) this.clusters.clearLayers()
+
 		this.msg = ""
 		if (this.textArea) {
 			if (this.text) {
@@ -184,6 +191,7 @@ export class MapComponent implements AfterViewInit {
 					this.identifyCity(this.spacyList)
 				})
 			}
+			// this.clearText()
 		}
 
 		if (!this.textArea) {
@@ -350,14 +358,14 @@ export class MapComponent implements AfterViewInit {
 		let nfc = this.fs.groupBy(this.notFoundCities, item => item.city)
 		for (let key of nfc) {
 			let item = {
-				city: this.fs.toCamelCase(key[0]),
+				city: key[0],
 			}
 			this.notFoundRepeatedCities.push(item)
 		}
 
 		this.fs.sortListObject(this.notFoundRepeatedCities)
 
-
+		
 		// ####################################################
 		// Afficher les villes non dupliquées
 		if (this.notDuplicatedCities.length > 0) {
@@ -508,11 +516,11 @@ export class MapComponent implements AfterViewInit {
 						{
 							iconUrl: 'assets/icons/circle_blue.png',
 							// iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-icon.png',
-							iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-icon-2x.png',
+							// iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-icon-2x.png',
 							iconSize: [iconSize, iconSize],
 							iconAnchor: [6, 10],
 							popupAnchor: [5, -10],
-							html: "<h1>hello</h1>",
+							// html: "<h1>hello</h1>",
 						}
 					),
 				}
@@ -525,9 +533,15 @@ export class MapComponent implements AfterViewInit {
 			this.map.addLayer(this.clusters)
 		})
 		// Contenir tous les markers sur la carte
+
+		
+		
 		if (this.markers.length > 1) {
-			this.bounds = L.featureGroup(this.markers);
-			this.map.fitBounds(this.bounds.getBounds(), { padding: [0, 0] });
+			if (this.markers[0]._latlng.lat != this.markers[this.markers.length-1]._latlng.lat &&
+				this.markers[0]._latlng.lng != this.markers[this.markers.length-1]._latlng.lng){
+				this.bounds = L.featureGroup(this.markers);
+				this.map.fitBounds(this.bounds.getBounds(), { padding: [0, 0] });
+			}
 		}
 	}
 
