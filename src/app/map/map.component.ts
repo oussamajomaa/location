@@ -496,10 +496,6 @@ export class MapComponent implements AfterViewInit {
 			}
 		}
 		this.confirmedLocation = []
-		this.groupCountries.map(country => {
-			this.geoJson('assets/data/countries.json',country)
-
-		})
 	}
 
 	//  Cette methode pour recentrer la carte selon les markers en cliquant sur le bouton centrer
@@ -516,10 +512,6 @@ export class MapComponent implements AfterViewInit {
 		this.fs.getOccurence(arr, this.spacyList)
 		if (this.clusters) this.clusters.clearLayers()
 		this.getMarkers(arr)
-
-		this.groupCountries.map(country => {
-			this.geoJson('assets/data/countries.json',country)
-		})
 	}
 
 	onSelectDate(date) {
@@ -535,10 +527,6 @@ export class MapComponent implements AfterViewInit {
 		this.fs.getOccurence(arr, this.spacyList)
 		if (this.clusters) this.clusters.clearLayers()
 		this.getMarkers(arr)
-
-		this.groupCountries.map(country => {
-			this.geoJson('assets/data/countries.json',country)
-		})
 	}
 
 	onSelectALl() {
