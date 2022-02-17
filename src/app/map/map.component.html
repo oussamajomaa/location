@@ -35,7 +35,7 @@
 				<input type="file" accept=".txt,.zip" (change)="sendToSpacy($event)" #myInput class="mt-5"
 					id="fileDropReff">
 				<h5>(type txt ou zip, taille maximale: 100 ko)</h5>
-				<h4 class="warning px-2 rounded" style="position: absolute;top:53%; left:60%">{{fileName}}</h4>
+				
 			</label>
 		</div>
 
@@ -47,7 +47,7 @@
 			<div *ngIf="msg==='' && loading && fileName" class="spinner"></div>
 			<!-- Container to display found location -->
 			<div class="mb-2 " *ngIf="allNotDuplicatedCities.length > 0">
-				<mat-select placeholder="Lieux trouvés dans la BDD:" class="w-100 p-2 white rounded mat-elevation-z8">
+				<mat-select placeholder="{{noRepeatedCities.length}} Lieux trouvés dans la BDD :" class="w-100 p-2 white rounded mat-elevation-z8">
 					<mat-option *ngFor="let location of noRepeatedCities">
 						{{location.city}} - {{location.country}}
 					</mat-option>
@@ -56,7 +56,7 @@
 
 			<!-- Container to display unknown location -->
 			<div class="mb-2" *ngIf="notFoundCities.length > 0">
-				<mat-select placeholder="Lieux non reconnus dans la BDD:"
+				<mat-select placeholder="{{notFoundRepeatedCities.length}} Lieux non reconnus dans la BDD :"
 					class="w-100 p-2 warning rounded mat-elevation-z8">
 					<mat-option *ngFor="let location of notFoundRepeatedCities">
 						{{location.city}}
@@ -68,14 +68,14 @@
 
 		<!-- Container to display confused location -->
 		<div *ngIf="duplicatedCities.length > 0">
-			<p class="white mat-elevation-z8 rounded w-100 text-secondary"
-				style="padding: 6px; margin-bottom:5px; font-size:14px">Lieux ambigus:</p>
+			<p class="white mat-elevation-z8 rounded w-100 secondary"
+				style="padding: 6px; margin-bottom:5px; font-size:14px">Lieux ambigus :</p>
 			<div [ngClass]="{'rounded height2' :textArea, 'rounded height1' :!textArea}">
 
-				<Div *ngFor="let dups of multiDuplicatedCities; let j=index" style="border-bottom: 2px solid black;">
+				<Div *ngFor="let dups of multiDuplicatedCities; let j=index" style="border-bottom: 2px solid rgb(138, 138, 138);">
 					<div *ngFor="let location of dups; let i=index">
 
-						<div class="secondary p-1 my-1 rounded mat-elevation-z8">
+						<div class="secondary p-1 my-1 rounded ">
 							<input type="radio" name="radio{{j}}" value="{{location.city}}" id="checkbox{{i}}"
 								(click)="confirmLocation($event,location.id)">
 							<span class="ml-1">
@@ -85,16 +85,19 @@
 					</div>
 				</Div>
 			</div>
+			<button class="btn btn-outline-secondary rounded mat-elevation-z4 p-2 mb-1"
+				style="border: none; width:100%; " 
+				
+				*ngIf="duplicatedCities.length > 0"
+				(click)="displayOnMap()">Afficher sur la carte
+			</button>
 		</div>
 
-		<button class="primary rounded mat-elevation-z4 p-2 mb-1"
-			style="border: none; width:100%; position:absolute; bottom:80px" *ngIf="duplicatedCities.length > 0"
-			(click)="displayOnMap()">Afficher sur la carte
-		</button>
 
 
 		<button class="light primary rounded mat-elevation-z4 p-2 mb-1"
-			style="border: none; width:100%; position:absolute; bottom:40px"
+			style="border: none; width:100%; position:absolute;"
+			[ngStyle]="{'bottom':textArea ? '44px':'4px'}"
 			*ngIf="notFoundRepeatedCities.length > 0 || noRepeatedCities.length > 0 || multiDuplicatedCities.length > 0"
 			(click)="exportCSV()">Exporter en CSV
 		</button>

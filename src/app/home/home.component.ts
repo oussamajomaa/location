@@ -308,6 +308,10 @@ export class HomeComponent implements AfterViewInit {
 				if (this.spacyText.match(new RegExp(cityRegex, 'g'))) {
 					this.foundCities.push(location)
 				}
+				// let countryRegex = new RegExp("\\b" + location.country + "\\b")
+				// if (this.spacyText.match(new RegExp(countryRegex, 'g'))) {
+				// 	this.foundCountries.push(location)
+				// }
 			})
 		}
 		// Récupérer les lieux non identifiés et les mettre dans une liste notFoundCities

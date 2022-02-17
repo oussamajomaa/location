@@ -64,6 +64,7 @@ export class MapComponent implements AfterViewInit {
 	allCities = []
 	noRepeatedCities: any = []
 	notFoundRepeatedCities: any = []
+	groupCountries = []
 	onCenter = false
 	onCartographier = true
 	constructor(
@@ -146,12 +147,14 @@ export class MapComponent implements AfterViewInit {
 
 	// Vider le textarea
 	clearText() {
+		this.groupCountries = []
 		this.duplicatedCities = []
 		this.multiDuplicatedCities = []
 		this.notFoundCities = []
 		this.foundCities = []
 		this.notDuplicatedCities = []
 		this.allNotDuplicatedCities = []
+		this.foundCountries = []
 		this.places = []
 		this.allCities = []
 		this.listOfText = []
@@ -163,6 +166,7 @@ export class MapComponent implements AfterViewInit {
 		this.listOfText = []
 		this.notFoundRepeatedCities = []
 		this.noRepeatedCities = []
+		this.geojson = []
 		// this.rangevalue = 0
 		this.onCartographier = true
 		if (this.map) this.map.remove()
@@ -180,6 +184,9 @@ export class MapComponent implements AfterViewInit {
 		this.notFoundCities = []
 		this.allNotDuplicatedCities = []
 		this.markers = []
+		this.foundCountries = []
+		this.geojson = []
+		this.groupCountries = []
 		if (this.clusters) this.clusters.clearLayers()
 
 		this.msg = ""
@@ -200,8 +207,8 @@ export class MapComponent implements AfterViewInit {
 			const file: File = event.target.files[0];
 			this.myInput.nativeElement.value = ""
 
-			if (file) {		
-				if (file.type === "text/plain" && file.size < 450000){
+			if (file) {
+				if (file.size < 1000000) {
 					this.fileName = file.name
 					const formData = new FormData();
 					formData.append("name", file.name);
@@ -209,24 +216,24 @@ export class MapComponent implements AfterViewInit {
 					this.sendFormData(formData)
 				}
 				else {
-					if (file.type === "application/zip" && file.size < 100000){
-						this.fileName = file.name
-						const formData = new FormData();
-						formData.append("name", file.name);
-						formData.append("file", file, file.name);
-						this.sendFormData(formData)
-					}
-					else{
-						// this.isTooLarge = true
-						this.myInput.nativeElement.value = ""
-						alert('file too large')
-					}
+					// if (file.type === "application/zip" && file.size < 300000){
+					// 	this.fileName = file.name
+					// 	const formData = new FormData();
+					// 	formData.append("name", file.name);
+					// 	formData.append("file", file, file.name);
+					// 	this.sendFormData(formData)
+					// }
+					// else{
+					// this.isTooLarge = true
+					this.myInput.nativeElement.value = ""
+					alert('file too large')
+					// }
 				}
 			}
 		}
 	}
 
-	sendFormData(formData:any){
+	sendFormData(formData: any) {
 		// Send file to Spacy and get response
 		this.http.post(`${environment.url_py}/file`, formData).subscribe((res: any) => {
 			this.spacyList = res
@@ -261,7 +268,7 @@ export class MapComponent implements AfterViewInit {
 		})
 	}
 
-	multiDuplicatedCities :any = []
+	multiDuplicatedCities: any = []
 	identifyCity(list: any = []) {
 		this.loading = false
 		// create list of spacy location
@@ -279,8 +286,21 @@ export class MapComponent implements AfterViewInit {
 				if (this.spacyText.match(new RegExp(cityRegex, 'g'))) {
 					this.foundCities.push(location)
 				}
+				let countryRegex = new RegExp("\\b" + location.country + "\\b")
+				if (this.spacyText.match(new RegExp(countryRegex, 'g'))) {
+					this.foundCountries.push(location.country)
+				}
 			})
 		}
+		this.foundCountries = this.fs.groupBy(this.foundCountries,location => location)
+		this.groupCountries = []
+		for (let key of this.foundCountries) {
+			this.groupCountries.push(key[0])
+		}
+		
+		
+		
+		
 		// Récupérer les lieux non identifiés et les mettre dans une liste notFoundCities
 		list.map(item => {
 			if (!this.foundCities.find(location => location.city === item.city)) {
@@ -321,14 +341,14 @@ export class MapComponent implements AfterViewInit {
 		}
 
 
-		if (this.duplicatedCities.length > 1){
+		if (this.duplicatedCities.length > 1) {
 			let nrc = this.fs.groupBy(this.duplicatedCities, item => item.city)
 			for (let key of nrc) {
 				this.multiDuplicatedCities.push(key[1])
 			}
 		}
 
-		
+
 		list.forEach(item => {
 			this.notDuplicatedCities.forEach(location => {
 				if (item.city === location.city) {
@@ -353,7 +373,20 @@ export class MapComponent implements AfterViewInit {
 			}
 			this.noRepeatedCities.push(item)
 		}
-		this.fs.getOccurence(this.noRepeatedCities,this.spacyList)
+
+		
+		// add les pays à liste des lieux trouvés
+		this.groupCountries.map(country => {
+			let item = {
+				city : country,
+				country : country,
+				occurence:1
+			}
+			this.noRepeatedCities.push(item)
+		})
+
+
+		this.fs.getOccurence(this.noRepeatedCities, this.spacyList)
 
 		let nfc = this.fs.groupBy(this.notFoundCities, item => item.city)
 		for (let key of nfc) {
@@ -363,9 +396,17 @@ export class MapComponent implements AfterViewInit {
 			this.notFoundRepeatedCities.push(item)
 		}
 
+		
+
+		this.groupCountries.map(country => {
+			this.notFoundRepeatedCities = this.notFoundRepeatedCities.filter(location => {
+				location.country != country
+			})
+		})
+
 		this.fs.sortListObject(this.notFoundRepeatedCities)
 
-		
+
 		// ####################################################
 		// Afficher les villes non dupliquées
 		if (this.notDuplicatedCities.length > 0) {
@@ -379,14 +420,14 @@ export class MapComponent implements AfterViewInit {
 
 	confirmedLocation = []
 	confirmLocation(event, id) {
-		
+
 		this.onCenter = false
 		if (event.target.checked) {
 			let loc = this.locations.filter(location => {
 				return location.id === parseInt(id)
 			})
 			let item = loc[0]
-		
+
 			// Add fileDate and fileName to object item
 			this.spacyList.forEach(element => {
 				if (element.city === item.city) {
@@ -394,13 +435,13 @@ export class MapComponent implements AfterViewInit {
 					item.fileName = element.fileName
 				}
 			})
-			
+
 			this.allNotDuplicatedCities = this.allNotDuplicatedCities.filter(location => {
 				return location.city != item.city
 			})
 			this.allNotDuplicatedCities.push(item)
-			
-		
+
+
 			this.fs.sortListObject(this.allNotDuplicatedCities)
 
 			this.confirmedLocation = this.confirmedLocation.filter(location => {
@@ -416,8 +457,8 @@ export class MapComponent implements AfterViewInit {
 					country: key[1][0].country
 				}
 				this.noRepeatedCities.push(item)
-				this.fs.sortListObject(this.noRepeatedCities)				
-				this.fs.getOccurence(this.noRepeatedCities,this.spacyList)
+				this.fs.sortListObject(this.noRepeatedCities)
+				this.fs.getOccurence(this.noRepeatedCities, this.spacyList)
 			}
 		}
 		// this.displayOnMap()
@@ -427,39 +468,43 @@ export class MapComponent implements AfterViewInit {
 		// 	this.confirmedLocation = this.confirmedLocation.filter(location => location.id !== parseInt(id))
 		// 	this.allNotDuplicatedCities = this.allNotDuplicatedCities.filter(location => location.id !== parseInt(id))
 		// }
-		
+
 	}
 
-	onFirsteCenter=true
+	onFirsteCenter = true
 	displayOnMap() {
-		this.onFirsteCenter=true
-		this.fs.getOccurence(this.allNotDuplicatedCities,this.spacyList)
+		this.onFirsteCenter = true
+		this.fs.getOccurence(this.allNotDuplicatedCities, this.spacyList)
 		this.markers = []
 		if (this.clusters) this.clusters.clearLayers()
 		this.getMarkers(this.allNotDuplicatedCities)
 
-		
+
 		// remove location from confused list
 		this.confirmedLocation.forEach((element) => {
-			this.duplicatedCities= this.duplicatedCities.filter(location => {
+			this.duplicatedCities = this.duplicatedCities.filter(location => {
 				return location.city != element.city
 			})
 			// let index = this.duplicatedCities.indexOf(element)
 			// this.duplicatedCities.splice(index, 1)
 		})
 		this.multiDuplicatedCities = []
-		if (this.duplicatedCities.length > 1){
+		if (this.duplicatedCities.length > 1) {
 			let nrc = this.fs.groupBy(this.duplicatedCities, item => item.city)
 			for (let key of nrc) {
 				this.multiDuplicatedCities.push(key[1])
 			}
 		}
 		this.confirmedLocation = []
+		this.groupCountries.map(country => {
+			this.geoJson('assets/data/countries.json',country)
+
+		})
 	}
 
 	//  Cette methode pour recentrer la carte selon les markers en cliquant sur le bouton centrer
 	onSelectText(text) {
-		this.onFirsteCenter=true
+		this.onFirsteCenter = true
 		this.onCenter = true
 		this.textSelected = text
 		let arr = []
@@ -468,13 +513,17 @@ export class MapComponent implements AfterViewInit {
 		})
 
 		// Récupérer l'occurence de chaque lieu
-		this.fs.getOccurence(arr,this.spacyList)
+		this.fs.getOccurence(arr, this.spacyList)
 		if (this.clusters) this.clusters.clearLayers()
 		this.getMarkers(arr)
+
+		this.groupCountries.map(country => {
+			this.geoJson('assets/data/countries.json',country)
+		})
 	}
 
 	onSelectDate(date) {
-		this.onFirsteCenter=false
+		this.onFirsteCenter = false
 		this.onCenter = false
 		this.dateSelected = date
 		let arr = []
@@ -483,16 +532,20 @@ export class MapComponent implements AfterViewInit {
 		})
 
 		// Récupérer l'occurence de chaque lieu
-		this.fs.getOccurence(arr,this.spacyList)
+		this.fs.getOccurence(arr, this.spacyList)
 		if (this.clusters) this.clusters.clearLayers()
 		this.getMarkers(arr)
+
+		this.groupCountries.map(country => {
+			this.geoJson('assets/data/countries.json',country)
+		})
 	}
 
 	onSelectALl() {
 		let arr = this.allNotDuplicatedCities
 		// this.onFirsteCenter=true
 		// Récupérer l'occurence de chaque lieu
-		this.fs.getOccurence(arr,this.spacyList)
+		this.fs.getOccurence(arr, this.spacyList)
 
 		if (this.clusters) this.clusters.clearLayers()
 		this.getMarkers(arr)
@@ -534,20 +587,34 @@ export class MapComponent implements AfterViewInit {
 		})
 		// Contenir tous les markers sur la carte
 
-		
-		
+
+
 		if (this.markers.length > 1) {
-			if (this.markers[0]._latlng.lat != this.markers[this.markers.length-1]._latlng.lat &&
-				this.markers[0]._latlng.lng != this.markers[this.markers.length-1]._latlng.lng){
+			if (this.markers[0]._latlng.lat != this.markers[this.markers.length - 1]._latlng.lat &&
+				this.markers[0]._latlng.lng != this.markers[this.markers.length - 1]._latlng.lng) {
 				this.bounds = L.featureGroup(this.markers);
 				this.map.fitBounds(this.bounds.getBounds(), { padding: [0, 0] });
 			}
 		}
+
+		// entourer les pays
+		this.groupCountries.map(country => {
+			this.geoJson('assets/data/countries.json',country)
+		})
 	}
 
 	// Sauvegarder les ambigus et les lieus non reconnus dans deux fichier csv
 	exportCSV() {
-		this.fs.exportCSV(this.noRepeatedCities,this.notFoundRepeatedCities)
+		this.fs.exportCSV(this.noRepeatedCities, this.notFoundRepeatedCities)
+	}
+
+	//dessiner les frontières
+	geoJson(url: string, country: string) {
+		this.http.get(url).subscribe((res: any) => {
+			this.geojson = res
+			this.geojson = this.geojson.features.filter(data => data.properties['ADMIN'] === country)
+			L.geoJSON(this.geojson).addTo(this.map)
+		})
 	}
 }
 
@@ -566,10 +633,3 @@ export class MapComponent implements AfterViewInit {
 
 
 
-// geoJson(url: string, country: string) {
-	// 	this.http.get(url).subscribe((res: any) => {
-	// 		this.geojson = res
-	// 		this.geojson = this.geojson.features.filter(data => data.properties['ADMIN'] === country)
-	// 		L.geoJSON(this.geojson).addTo(this.map)
-	// 	})
-	// }
