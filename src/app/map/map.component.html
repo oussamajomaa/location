@@ -55,7 +55,7 @@
 			</div>
 
 			<!-- Container to display unknown location -->
-			<div class="mb-2" *ngIf="notFoundCities.length > 0">
+			<div class="mb-2" *ngIf="notFoundRepeatedCities.length > 0">
 				<mat-select placeholder="{{notFoundRepeatedCities.length}} Lieux non reconnus dans la BDD :"
 					class="w-100 p-2 warning rounded mat-elevation-z8">
 					<mat-option *ngFor="let location of notFoundRepeatedCities">
