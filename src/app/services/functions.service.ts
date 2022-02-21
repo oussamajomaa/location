@@ -1,4 +1,7 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import * as L from 'leaflet';
+
 
 
 @Injectable({
@@ -6,7 +9,7 @@ import { Injectable } from '@angular/core';
 })
 export class FunctionsService {
 
-	constructor() { }
+	constructor(private http:HttpClient) { }
 
 	// Transform string into Camel Case
 	toCamelCase(s) {
@@ -79,6 +82,84 @@ export class FunctionsService {
 		arr1.map(location => {
 			// return location.occurence = this.wordList.filter(word => word === location.city).length
 			return location.occurence = arr2.filter(item => item.city.match("\\b" + location.city + "\\b")).length
+		})
+	}
+
+	getCountryCoords(allCountries:any[],url:string, countryCordinate:any[],marker:any, markers:any[]){
+		allCountries.forEach(item => {
+			this.http.get(url).subscribe((res: any) => {
+				let coords:any = []	
+				let cc:any = []
+				res.features.map((river:any) => {
+					if (river.properties.admin === item.country) {
+						coords.push(
+							{
+								name:item.country,
+								coords:river.geometry.coordinates[0],
+								fileDate:item.fileDate,
+								fileName:item.fileName
+							})
+					}
+				})
+				cc.push(coords[0])
+				console.log(cc);
+				
+				cc.map(location =>{
+					if (Array.isArray(location.coords[0][0])){
+						location.lat = location.coords[0][0][0]
+						location.lng = location.coords[0][0][1]
+						return location
+					}
+					else{
+						location.lat = location.coords[0][0]
+						location.lng = location.coords[0][1]
+						return location
+						
+					}
+				})
+				countryCordinate.push(cc[0])
+				countryCordinate.map(country => {
+					marker = L.marker([country.lat, country.lng])
+					markers.push(marker)
+				})
+			})
+		})
+		console.log(countryCordinate);
+	}
+
+	getRiverCoords(allRivers:any[],url:string,riverCordinate:any[],marker:any, markers:any[]){
+		allRivers.forEach(item => {
+			this.http.get(url).subscribe((res: any) => {
+				let coords:any = []	
+				res.features.map((river:any) => {
+					if (river.properties.name === item.name) {
+						coords.push(
+							{
+								name:item.name,
+								coords:river.geometry.coordinates[0],
+								fileDate:item.fileDate,
+								fileName:item.fileName
+							})
+					}
+				})
+				coords = this.groupBy(coords,river => river.name)
+				for (let key of coords) {					
+					riverCordinate.push({name:key[1][0].name, lat:key[1][0].coords[0], lng:key[1][0].coords[1], fileDate:key[1][0].fileDate,fileName:key[1][0].fileName})
+				}
+				
+				let rc:any = []
+				rc = this.groupBy(riverCordinate, river => river.name)
+				
+				riverCordinate = []
+				for (let key of rc){
+					riverCordinate.push(key[1][0]);
+				}
+				riverCordinate.map(river => {
+					marker = L.marker([river.lng, river.lat])
+					markers.push(marker)
+				})
+
+			})
 		})
 	}
 

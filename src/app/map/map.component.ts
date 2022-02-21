@@ -7,6 +7,8 @@ import { Router } from '@angular/router';
 
 import { Options } from "@angular-slider/ngx-slider";
 import { FunctionsService } from '../services/functions.service';
+import { Layers } from './layers';
+import { AuthService } from '../services/auth.service';
 
 
 @Component({
@@ -41,6 +43,8 @@ export class MapComponent implements AfterViewInit {
 	notDuplicatedCities: any = []
 	allNotDuplicatedCities: any = []
 	foundCountries: any = []
+	foundRivers: any = []
+	groupRivers: any = []
 	arr: any = []
 	file: any;
 	msg: string
@@ -65,13 +69,16 @@ export class MapComponent implements AfterViewInit {
 	noRepeatedCities: any = []
 	notFoundRepeatedCities: any = []
 	groupCountries = []
+	nominatims: any = []
 	onCenter = false
 	onCartographier = true
+
 	constructor(
 		private dataService: DataService,
 		private http: HttpClient,
 		private router: Router,
-		private fs: FunctionsService
+		private fs: FunctionsService,
+		public auth:AuthService
 
 	) { }
 
@@ -80,9 +87,12 @@ export class MapComponent implements AfterViewInit {
 			this.locations = res
 		})
 		this.createMap()
+		this.getRiver()
 	}
 
 	createMap(lat = 0, lng = 0, z = 2) {
+		let baseMaps = new Layers().getBaseMap()
+
 		this.map = L.map('map').setView([lat, lng], z);
 		this.mainLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 			minZoom: 1,
@@ -90,38 +100,6 @@ export class MapComponent implements AfterViewInit {
 			attribution: 'OSM'
 		});
 		this.mainLayer.addTo(this.map);
-
-		const Stadia_AlidadeSmooth = L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png', {
-			maxZoom: 20,
-			attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
-		});
-
-		const OpenStreetMap_France = L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
-			maxZoom: 20,
-			attribution: '&copy; OpenStreetMap France | &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-		});
-
-		const OpenTopoMap = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-			maxZoom: 17,
-			attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
-		});
-
-		const Esri_WorldImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-			attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
-		});
-
-		const Esri_NatGeoWorldMap = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}', {
-			attribution: 'Tiles &copy; Esri &mdash; National Geographic, Esri, DeLorme, NAVTEQ, UNEP-WCMC, USGS, NASA, ESA, METI, NRCAN, GEBCO, NOAA, iPC',
-			maxZoom: 16
-		});
-		// leaflet layer control
-		const baseMaps = {
-			'Stadia_AlidadeSmooth': Stadia_AlidadeSmooth,
-			'OpenStreetMap_France': OpenStreetMap_France,
-			'OpenTopoMap': OpenTopoMap,
-			'Esri_WorldImagery': Esri_WorldImagery,
-			'Esri_NatGeoWorldMap': Esri_NatGeoWorldMap
-		}
 
 		var marker = L.markerClusterGroup()
 		const overlayMaps = {
@@ -133,7 +111,7 @@ export class MapComponent implements AfterViewInit {
 	}
 
 
-	isClicked = true
+	// isClicked = true
 	onSelectTextArea(e) {
 		this.textArea = true
 		this.onCartographier = true
@@ -155,6 +133,8 @@ export class MapComponent implements AfterViewInit {
 		this.notDuplicatedCities = []
 		this.allNotDuplicatedCities = []
 		this.foundCountries = []
+		this.foundRivers = []
+		this.groupRivers = []
 		this.places = []
 		this.allCities = []
 		this.listOfText = []
@@ -167,13 +147,36 @@ export class MapComponent implements AfterViewInit {
 		this.notFoundRepeatedCities = []
 		this.noRepeatedCities = []
 		this.geojson = []
-		// this.rangevalue = 0
+		this.loading = false
 		this.onCartographier = true
 		if (this.map) this.map.remove()
 		this.createMap()
 	}
 
-	isTooLarge = false
+
+	
+	isUnkown = false
+	// Send unkown location to Nominatim to get coordinate and country name
+	unkownLocation() {
+		this.nominatims = []
+		let notFound = this.notFoundRepeatedCities.map(location => {
+			return location.city
+		})
+		notFound.map((place, i, row) => {
+			this.isUnkown = true
+			this.http.get(`${environment.url_py}/unkown`, { params: { place: place } })
+				.subscribe((res: any) => {
+					if (res.length != 0) {
+						this.nominatims.push(res[0])
+					}
+					if (i + 1 === row.length) {
+						this.isUnkown = false
+						this.router.navigate(["location"],{queryParams:{nominatims:JSON.stringify(this.nominatims)}})
+					}
+				})
+		})
+	}
+
 	sendToSpacy(event) {
 		this.notFoundRepeatedCities = []
 		this.notDuplicatedCities = []
@@ -185,12 +188,15 @@ export class MapComponent implements AfterViewInit {
 		this.allNotDuplicatedCities = []
 		this.markers = []
 		this.foundCountries = []
+		this.foundRivers = []
+		this.groupRivers = []
 		this.geojson = []
 		this.groupCountries = []
 		if (this.clusters) this.clusters.clearLayers()
 
 		this.msg = ""
 		if (this.textArea) {
+			this.loading = true
 			if (this.text) {
 				this.onCartographier = false
 				this.http.get(`${environment.url_py}/text`, { params: { text: this.text } }).subscribe((res: any) => {
@@ -204,31 +210,35 @@ export class MapComponent implements AfterViewInit {
 		if (!this.textArea) {
 			this.clearText()
 			this.loading = true
-			const file: File = event.target.files[0];
+			this.file = event.target.files[0];
 			this.myInput.nativeElement.value = ""
 
-			if (file) {
-				if (file.size < 1000000) {
-					this.fileName = file.name
+			if (this.file) {
+				let length = this.file.name.split('.').length
+				let ext = this.file.name.split('.')[length-1]
+				if (ext === 'txt' && this.file.size < 1000000) {
+					this.fileName = this.file.name
 					const formData = new FormData();
-					formData.append("name", file.name);
-					formData.append("file", file, file.name);
+					formData.append("name", this.file.name);
+					formData.append("file", this.file, this.file.name);
 					this.sendFormData(formData)
 				}
 				else {
-					// if (file.type === "application/zip" && file.size < 300000){
-					// 	this.fileName = file.name
-					// 	const formData = new FormData();
-					// 	formData.append("name", file.name);
-					// 	formData.append("file", file, file.name);
-					// 	this.sendFormData(formData)
-					// }
-					// else{
-					// this.isTooLarge = true
-					this.myInput.nativeElement.value = ""
-					alert('file too large')
-					// }
+					if (ext === 'zip' && this.file.size < 350000) {
+						this.fileName = this.file.name
+						const formData = new FormData();
+						formData.append("name", this.file.name);
+						formData.append("file", this.file, this.file.name);
+						this.sendFormData(formData)
+					}
+					else {
+						this.myInput.nativeElement.value = ""
+						this.loading = false
+						alert('Le fichier zip doit être moin de 350 ko et le txt moins de 1000 ko!')
+					}
 				}
+
+
 			}
 		}
 	}
@@ -269,6 +279,10 @@ export class MapComponent implements AfterViewInit {
 	}
 
 	multiDuplicatedCities: any = []
+	allCountries: any = []
+	allRivers: any = []
+	riverCordinate: any = []
+	countryCordinate:any = []
 	identifyCity(list: any = []) {
 		this.loading = false
 		// create list of spacy location
@@ -290,17 +304,85 @@ export class MapComponent implements AfterViewInit {
 				if (this.spacyText.match(new RegExp(countryRegex, 'g'))) {
 					this.foundCountries.push(location.country)
 				}
+
 			})
 		}
-		this.foundCountries = this.fs.groupBy(this.foundCountries,location => location)
+
+		// regroupe la liste des foundCountries par le nom de country
+		this.foundCountries = this.fs.groupBy(this.foundCountries, location => location)
 		this.groupCountries = []
 		for (let key of this.foundCountries) {
 			this.groupCountries.push(key[0])
 		}
+		this.allCountries = []
+		this.spacyList.map(location => {
+			this.groupCountries.map((country: any) => {
+				if (location.city === country) {
+					let item = {
+						country: country,
+						fileName: location.fileName,
+						fileDate: location.fileDate
+					}
+
+					this.allCountries.push(item)
+				}
+			})
+		})
+
+		this.countryCordinate = []
 		
+		// // Récupérer les coordonnées des pays
+		// this.fs.getCountryCoords(this.allCountries,'assets/data/pays.json', this.countryCordinate,this.marker, this.markers)
+		// Fin coordonnées des pays
 		
+
+		// Regroupe allCountries
+		// let ac = this.fs.groupBy(this.allCountries, location => location.country)
+		// let ca:any = []
+		// for (let key of ac){
+		// 	ca.push({country:key[0], fileDate:key[1][0].fileDate, fileName:key[1][0].fileName})
+		// }
+		// this.allCountries = ca
 		
-		
+		// this.allCountries.map(country => {
+		// 	this.geoJson('assets/data/pays.json', country.country)
+		// })
+
+
+		// chercher les rivères
+		// this.rivers.map(river => {
+		// 	let riverRegex = new RegExp("\\b" + river.name + "\\b")
+		// 	if (this.spacyText.match(new RegExp(riverRegex, 'g'))) {
+		// 		this.foundRivers.push(river)
+		// 	}
+		// })
+
+		// récupérer le nom du fichier et la date
+		// this.allRivers = []
+		// this.spacyList.map(location => {
+		// 	this.foundRivers.map((river: any) => {
+		// 		if (location.city === river.name) {
+		// 			let item = {
+		// 				name: river.name,
+		// 				fileName: location.fileName,
+		// 				fileDate: location.fileDate
+		// 			}
+		// 			this.allRivers.push(item)					
+		// 		}
+		// 	})
+		// })
+
+		// this.fs.sortListObject(this.allRivers)
+
+		// this.allRivers.map(river => {
+		// 	this.geoJson('assets/data/river.json', river.name)
+		// })
+
+
+		// // Récupérer les coordonnées des rivières
+		// this.fs.getRiverCoords(this.allRivers,'assets/data/river.json',this.riverCordinate,this.marker, this.markers)
+		// Fin coordonnées des rivères
+
 		// Récupérer les lieux non identifiés et les mettre dans une liste notFoundCities
 		list.map(item => {
 			if (!this.foundCities.find(location => location.city === item.city)) {
@@ -341,6 +423,7 @@ export class MapComponent implements AfterViewInit {
 		}
 
 
+		// Regroupe les lieux duplicqués selon le nom du lieu et les stocker dans la list multiDuplicatedCities
 		if (this.duplicatedCities.length > 1) {
 			let nrc = this.fs.groupBy(this.duplicatedCities, item => item.city)
 			for (let key of nrc) {
@@ -360,6 +443,7 @@ export class MapComponent implements AfterViewInit {
 			})
 		})
 
+
 		if (this.allNotDuplicatedCities.length > 1) {
 			this.fs.sortListObject(this.allNotDuplicatedCities)
 		}
@@ -374,15 +458,21 @@ export class MapComponent implements AfterViewInit {
 			this.noRepeatedCities.push(item)
 		}
 
-		
+
+
 		// add les pays à liste des lieux trouvés
 		this.groupCountries.map(country => {
 			let item = {
-				city : country,
-				country : country,
-				occurence:1
+				city: country,
+				country: country,
+				occurence: 1
 			}
 			this.noRepeatedCities.push(item)
+		})
+
+		// add les fleuves à liste des lieux trouvés
+		this.foundRivers.map(river => {
+			this.noRepeatedCities.push({ city: river.name, country: river.name, occurence: 1 })
 		})
 
 
@@ -396,11 +486,17 @@ export class MapComponent implements AfterViewInit {
 			this.notFoundRepeatedCities.push(item)
 		}
 
-		
 
+		// remove pays de la liste
 		this.groupCountries.map(country => {
 			this.notFoundRepeatedCities = this.notFoundRepeatedCities.filter(location => {
 				location.country != country
+			})
+		})
+		// remove rivère de la liste
+		this.foundRivers.map(river => {
+			this.notFoundRepeatedCities = this.notFoundRepeatedCities.filter(location => {
+				location.city != river.name
 			})
 		})
 
@@ -426,27 +522,31 @@ export class MapComponent implements AfterViewInit {
 			let loc = this.locations.filter(location => {
 				return location.id === parseInt(id)
 			})
-			let item = loc[0]
 
+			// récupperer la location demandée selon l'id
+			let item = loc[0]
 			// Add fileDate and fileName to object item
 			this.spacyList.forEach(element => {
-				if (element.city === item.city) {
+				if (element.city.search(item.city)) {
 					item.fileDate = element.fileDate
 					item.fileName = element.fileName
 				}
 			})
 
-			this.allNotDuplicatedCities = this.allNotDuplicatedCities.filter(location => {
-				return location.city != item.city
-			})
-			this.allNotDuplicatedCities.push(item)
 
+			// remove les locations de la listes des ambigues selon le nom de la location choisie
+			// this.allNotDuplicatedCities = this.allNotDuplicatedCities.filter(location => {
+			// 	return location.city != item.city
+			// })
+			this.allNotDuplicatedCities.push(item)
 
 			this.fs.sortListObject(this.allNotDuplicatedCities)
 
 			this.confirmedLocation = this.confirmedLocation.filter(location => {
 				return location.city != item.city
 			})
+
+			// Ajouter le lieu confirmé à la list confirmedLocation
 			this.confirmedLocation.push(item)
 
 			this.noRepeatedCities = []
@@ -461,19 +561,15 @@ export class MapComponent implements AfterViewInit {
 				this.fs.getOccurence(this.noRepeatedCities, this.spacyList)
 			}
 		}
-		// this.displayOnMap()
-
-		// if (!event.target.checked) {
-		// 	this.places = this.places.filter(location => location.id !== parseInt(id))
-		// 	this.confirmedLocation = this.confirmedLocation.filter(location => location.id !== parseInt(id))
-		// 	this.allNotDuplicatedCities = this.allNotDuplicatedCities.filter(location => location.id !== parseInt(id))
-		// }
 
 	}
 
 	onFirsteCenter = true
 	displayOnMap() {
+		// this.textSelected = ""
+		// this.dateSelected = ""
 		this.onFirsteCenter = true
+		// this.onCenter = true
 		this.fs.getOccurence(this.allNotDuplicatedCities, this.spacyList)
 		this.markers = []
 		if (this.clusters) this.clusters.clearLayers()
@@ -496,11 +592,19 @@ export class MapComponent implements AfterViewInit {
 			}
 		}
 		this.confirmedLocation = []
+
+		// this.allCountries.map(country => {
+		// 	this.geoJson('assets/data/pays.json', country.country)
+		// })
+
+		// this.allRivers.map(river => {
+		// 	this.geoJson('assets/data/river.json', river.name)
+		// })
 	}
 
 	//  Cette methode pour recentrer la carte selon les markers en cliquant sur le bouton centrer
 	onSelectText(text) {
-		this.onFirsteCenter = true
+		this.onFirsteCenter = false
 		this.onCenter = true
 		this.textSelected = text
 		let arr = []
@@ -510,6 +614,40 @@ export class MapComponent implements AfterViewInit {
 
 		// Récupérer l'occurence de chaque lieu
 		this.fs.getOccurence(arr, this.spacyList)
+		if (this.clusters) this.clusters.clearLayers()
+		this.getMarkers(arr)
+		
+		// let filterGroupCountries = this.allCountries.filter(location => {
+		// 	return location.fileName === text
+		// })
+		// filterGroupCountries.map(country => {
+		// 	this.geoJson('assets/data/pays.json', country.country)
+		// })
+
+		// let filterGroupRiver = this.allRivers.filter(location => {
+		// 	return location.fileName === text
+		// })
+		// filterGroupRiver.map(river => {
+		// 	this.geoJson('assets/data/river.json', river.name)
+		// })
+
+		// let filterCoordsRiver = this.riverCordinate.filter(location => {
+		// 	return location.fileName === text
+		// })
+		// filterCoordsRiver.map(river => {
+		// 	this.marker = L.marker([river.lng, river.lat])
+		// 	this.markers.push(this.marker)
+		// })
+
+		// let filterCoordsCountry = this.countryCordinate.filter(location => {
+		// 	return location.fileName === text
+		// })
+
+		// filterCoordsCountry.map(country => {			
+		// 	this.marker = L.marker([country.lat, country.lng])
+		// 	this.markers.push(this.marker)
+		// })
+
 		if (this.clusters) this.clusters.clearLayers()
 		this.getMarkers(arr)
 	}
@@ -525,15 +663,67 @@ export class MapComponent implements AfterViewInit {
 
 		// Récupérer l'occurence de chaque lieu
 		this.fs.getOccurence(arr, this.spacyList)
+		
+		// let filterGroupCountries = this.allCountries.filter(location => {
+		// 	return location.fileDate === date
+		// })
+		// filterGroupCountries.map(country => {
+		// 	this.geoJson('assets/data/pays.json', country.country)
+		// })
+
+		// let filterGroupRiver = this.allRivers.filter(location => {
+		// 	return location.fileDate === date
+		// })
+		// filterGroupRiver.map(river => {
+		// 	this.geoJson('assets/data/river.json', river.name)
+		// })
+
+		// let filterCoordsRiver = this.riverCordinate.filter(location => {
+		// 	return location.fileDate === date
+		// })
+		// filterCoordsRiver.map(river => {
+		// 	this.marker = L.marker([river.lng, river.lat])
+		// 	this.markers.push(this.marker)
+		// })
+
+		// let filterCoordsCountry = this.countryCordinate.filter(location => {
+		// 	return location.fileDate === date
+		// })
+		
+		// filterCoordsCountry.map(country => {
+		// 	this.marker = L.marker([country.lat, country.lng])
+		// 	this.markers.push(this.marker)
+		// })
+
 		if (this.clusters) this.clusters.clearLayers()
 		this.getMarkers(arr)
 	}
 
 	onSelectALl() {
+		this.onFirsteCenter = true
+		this.onCenter = false
 		let arr = this.allNotDuplicatedCities
-		// this.onFirsteCenter=true
 		// Récupérer l'occurence de chaque lieu
 		this.fs.getOccurence(arr, this.spacyList)
+
+		
+		// this.allCountries.map(country => {
+		// 	this.geoJson('assets/data/pays.json', country.country)
+		// })
+
+		// this.allRivers.map(river => {
+		// 	this.geoJson('assets/data/river.json', river.name)
+		// })
+
+		// this.riverCordinate.map(river => {
+		// 	this.marker = L.marker([river.lng, river.lat])
+		// 	this.markers.push(this.marker)
+		// })
+
+		// this.countryCordinate.map(country => {
+		// 	this.marker = L.marker([country.lat, country.lng])
+		// 	this.markers.push(this.marker)
+		// })
 
 		if (this.clusters) this.clusters.clearLayers()
 		this.getMarkers(arr)
@@ -541,7 +731,6 @@ export class MapComponent implements AfterViewInit {
 
 	// Cette methode ajoute les markers sur la carte
 	getMarkers(arr: any[]) {
-		// this.fs.getMarkers(arr=arr,this.markers,this.map,this.clusters,L,this.onCenter,this.marker,this.bounds)
 		this.markers = []
 		if (this.map) this.map.remove()
 		this.createMap()
@@ -550,18 +739,16 @@ export class MapComponent implements AfterViewInit {
 
 		arr.map(location => {
 			if (this.onCenter) iconSize = 20
-			else iconSize = 20 + location.occurence
+			// else iconSize = 20 + location.occurence
+			else iconSize = 20
 			this.marker = L.marker([location.lat, location.lng],
 				{
 					icon: new L.Icon(
 						{
 							iconUrl: 'assets/icons/circle_blue.png',
-							// iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-icon.png',
-							// iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-icon-2x.png',
 							iconSize: [iconSize, iconSize],
 							iconAnchor: [6, 10],
 							popupAnchor: [5, -10],
-							// html: "<h1>hello</h1>",
 						}
 					),
 				}
@@ -573,10 +760,8 @@ export class MapComponent implements AfterViewInit {
 			this.clusters.addLayer(this.marker)
 			this.map.addLayer(this.clusters)
 		})
+		
 		// Contenir tous les markers sur la carte
-
-
-
 		if (this.markers.length > 1) {
 			if (this.markers[0]._latlng.lat != this.markers[this.markers.length - 1]._latlng.lat &&
 				this.markers[0]._latlng.lng != this.markers[this.markers.length - 1]._latlng.lng) {
@@ -584,11 +769,6 @@ export class MapComponent implements AfterViewInit {
 				this.map.fitBounds(this.bounds.getBounds(), { padding: [0, 0] });
 			}
 		}
-
-		// entourer les pays
-		this.groupCountries.map(country => {
-			this.geoJson('assets/data/countries.json',country)
-		})
 	}
 
 	// Sauvegarder les ambigus et les lieus non reconnus dans deux fichier csv
@@ -600,10 +780,23 @@ export class MapComponent implements AfterViewInit {
 	geoJson(url: string, country: string) {
 		this.http.get(url).subscribe((res: any) => {
 			this.geojson = res
-			this.geojson = this.geojson.features.filter(data => data.properties['ADMIN'] === country)
-			L.geoJSON(this.geojson).addTo(this.map)
+			this.geojson = this.geojson.features.filter(data => data.properties.name === country)
+			L.geoJSON(this.geojson, { style: {} }).addTo(this.map).bindPopup(country)
 		})
 	}
+
+	rivers: any = []
+	// récupérer les noms des rivières
+	getRiver() {
+		this.dataService.getRiver().subscribe((res: any) => {
+			let nrc = this.fs.groupBy(res.features, river => river.properties.name)
+			for (let key of nrc) {
+				this.rivers.push({ name: key[0], type: key[1][0].properties.featureclass.split(' ')[0] })
+			}
+		})
+
+	}
+
 }
 
 

@@ -32,6 +32,7 @@ export class LocationComponent implements AfterViewInit {
 	geojson: any
 	mainLayer: any
 	width = window.innerWidth
+	nominatim:any=[]
 
 	constructor(
 		private dataService: DataService,
@@ -39,15 +40,17 @@ export class LocationComponent implements AfterViewInit {
 		private route: ActivatedRoute,
 		private toastService: ToastrService,
 	) {
+			
+		this.route.queryParamMap.subscribe((params: any) => {
+			if (params.params.nominatims)
+			this.locations = JSON.parse(params.params.nominatims)			
+		})
 	}
 
 	@HostListener('window:resize', ['$event'])
 
 	onResize(event) {
-
-		this.width = window.innerWidth;
-		console.log(this.width);
-		
+		this.width = window.innerWidth;	
 	}
 
 	ngAfterViewInit(): void {
@@ -60,8 +63,6 @@ export class LocationComponent implements AfterViewInit {
 		// fin ** Récupératin tous les pays **
 		this.createMap()
 		this.getLatLng()
-
-
 	}
 
 	createMap(lat = 0, lng = 0, z = 2) {
@@ -86,16 +87,25 @@ export class LocationComponent implements AfterViewInit {
 		})
 	}
 
-	onAddLocation() {
-		// Récupérer l'id du pays
+	getIdCountry(country:string){
 		let id
-		this.countries.map(country => {
-			if (country.country === this.country) {
-				id = country.id
-				return id
-			}
+		this.countries.filter((location:any) => {
+			if(location.country_fr === country)
+			return this.id_country = location.id
 		})
-		this.id_country = id
+	}
+
+	onAddLocation() {
+		this.getIdCountry(this.country)
+		// Récupérer l'id du pays
+		// let id
+		// this.countries.filter(country => {
+		// 	if (country.country_fr === this.country) {
+		// 		id = country.id
+		// 		return id
+		// 	}
+		// })
+		// this.id_country = id
 		// fin ** Récupératin l'id du pays **
 
 		// Construire un objet location et 'insérer dans la list locations
@@ -105,7 +115,7 @@ export class LocationComponent implements AfterViewInit {
 			lat: this.lat,
 			lng: this.lng,
 			id_country: this.id_country
-		}
+		}		
 		this.locations.push(location)
 		this.country = null
 		this.city = null
@@ -121,9 +131,15 @@ export class LocationComponent implements AfterViewInit {
 		})
 	}
 
+	editCity(event,i){
+		this.locations[i].city = event.target.value	
+	}
+
 	onSubmit() {
 		// Itération de la liste locations et envoyer chaque élément à la BDD
 		this.locations.map(location => {
+			this.getIdCountry(location.country)
+			location.id_country = this.id_country			
 			this.http.post(`${environment.url}/add-city`, location)
 				.subscribe(res => res)
 		})

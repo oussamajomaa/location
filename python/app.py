@@ -1,3 +1,5 @@
+# pip3 install geopy
+from geopy.geocoders import Nominatim
 
 # Difference
 from spacy.lang.fr.examples import sentences
@@ -26,22 +28,47 @@ app.config['UPLOAD_PATH'] = 'uploads'
 @app.route('/text')
 def index():
     results = []
+    latlng=[]
     text = request.args.get('text')
     wikitext = nlp(text)
     # print(displacy.render(wikitext, style="ent"))
     for word in wikitext.ents:
-        print(word.text, word.start_char, word.end_char, word.label_)
+        # print(word.text, word.start_char, word.end_char, word.label_)
         item = {
             'city':word.text,
             'label':word.label_
         }
-        print(word.label_, word.text)
+        # print(word.label_, word.text)
         if word.label_ == "LOC":
-            results.append(item)
-        
+            results.append(item)          
  
     return json.dumps(results)
- 
+
+
+# Fonction pour récuppérer les coordonnées d'un lieu et son pays
+@app.route('/unkown')
+def unkown():
+    results = []
+    latlng=[]
+    word = request.args.get('place')
+   
+    print(word)
+    geolocator = Nominatim(user_agent="app.py", timeout=10)
+    location = geolocator.geocode(word)
+    print(location)
+    if (location):
+        country = geolocator.reverse([location.latitude,location.longitude], language='fr')
+        item = {
+            'city':word,
+            'lat':location.latitude,
+            'lng': location.longitude,
+            'country': country.raw['address']['country']
+        }
+        results.append(item)
+    
+    return json.dumps(results)
+
+
 
 @app.route('/file', methods=['POST'])
 def process():
@@ -71,7 +98,7 @@ def process():
            
             # Assign extracted files in variable array
             extractedFiles = glob.glob(baseUrl+"/uploads/*.txt")
-            print("extracted files " + str(extractedFiles))
+            # print("extracted files " + str(extractedFiles))
             results = []
             for extractedFile in extractedFiles:
                 f = open(extractedFile, "r")
@@ -107,9 +134,9 @@ def process():
        
         if file_ext == ".txt":
             f = open(baseUrl+"/uploads/"+filename, "r")
-            print(baseUrl)
+            # print(baseUrl)
             contents = f.readlines()
-            print(len(contents))
+            # print(len(contents))
             fileDate = 1900
             title = filename
 
@@ -137,7 +164,7 @@ def process():
                     'city':word.text,
                     'label':word.label_
                 }
-                print(word.label_, word.text)
+                # print(word.label_, word.text)
                 if word.label_ == "LOC":
                     results.append(item)
 

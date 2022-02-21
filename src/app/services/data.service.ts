@@ -28,4 +28,8 @@ export class DataService {
 		})
 		return this.http.post(`${environment.url_py}/file`,form)
 	}
+
+	getRiver(){
+		return this.http.get('assets/data/river.json')
+	}
 }

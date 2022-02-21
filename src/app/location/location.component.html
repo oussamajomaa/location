@@ -14,8 +14,8 @@
         <div class="row">
             <div class="col">
                 <label>Pays</label>
-                <select [(ngModel)]="country" class="w-100 p-2">
-                    <option *ngFor="let row of countries" value="{{row.country}}">{{row.country}}</option>
+                <select [(ngModel)]="country" class="w-100 p-2" >
+                    <option *ngFor="let row of countries" value="{{row.country_fr}}">{{row.country_fr}}</option>
                 </select>
             </div>
             <div class="col">
@@ -70,16 +70,17 @@
             <div class="row m-1 rounded" style="border-bottom:1px solid;"
                 *ngFor="let location of locations; let i=index">
                 <div class="col">
-                    <h3>{{location.country}}</h3>
+                   <h3>{{location.country}}</h3>
                 </div>
                 <div class="col">
-                    <h3>{{location.city}}</h3>
+                    <input type="text" [value]="location.city" class="w-100" (input)="editCity($event,i)">
+                    <!-- <h3>{{location.city}}</h3> -->
                 </div>
                 <div class="col">
-                    <h3>{{location.lat}}</h3>
+                    <h3>{{location.lat | number : '1.2-2'}}</h3>
                 </div>
                 <div class="col">
-                    <h3>{{location.lng}}</h3>
+                    <h3>{{location.lng | number : '1.2-2'}}</h3>
                 </div>
                 <div class="col">
                     <mat-icon style="margin-right: 10px; cursor:pointer;" color="warn" (click)="removeCity(location.city)"
