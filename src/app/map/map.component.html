@@ -6,37 +6,36 @@
 		<!-- Container to display two Buttom -->
 		<div class="d-flex justify-content-between mb-2 buttons">
 
-			<button mat-raised-button [ngClass]="{'clicked': textArea}" style="width: 45%; height:6vh;" class="primary"
-				(click)="onSelectTextArea($event)">Saisir un text</button>
-			<button mat-raised-button [ngClass]="{'clicked': !textArea}" style="width: 45%; height:6vh;" class="primary"
-				(click)="onSelectUploadFile($event)">Charger un fichier</button>
+			<button mat-raised-button [ngClass]="{'clicked': textArea}"  class="primary btn1"
+				(click)="onSelectTextArea($event)">Add text</button>
+			<button mat-raised-button [ngClass]="{'clicked': !textArea}"  class="primary btn1"
+				(click)="onSelectUploadFile($event)">Upload file(s)</button>
 		</div>
 
 		<!-- Container to display Text editor -->
 		<div *ngIf="textArea" class="mb-1">
 			<div class="textArea">
-				<textarea placeholder="Saisir un texte jusqu'à 900000 caractères (plus de 130000 mots)..." [(ngModel)]="text" style="height: 15vh;"
+				<textarea placeholder="Add text (max: 130.000 words)" [(ngModel)]="text"
 					 rows="4" maxlength="900000" class="rounded">
 				</textarea>
 			</div>
 
-			<div class="d-flex justify-content-between align-items-center carto">
-				<button *ngIf="textArea" (click)="sendToSpacy($event)" mat-raised-button class="primary"
-					style="width: 45%; height:5vh" [disabled]="!text ">Cartographier</button>
+			<div class="d-flex justify-content-between align-items-center">
+				<button *ngIf="textArea" (click)="sendToSpacy($event)" mat-raised-button class="primary btn2"
+					 [disabled]="!text ">Map</button>
 
-				<button *ngIf="textArea" (click)="clearText()" mat-raised-button class="danger"
-					style="width: 45%;height:5vh">Effacer</button>
+				<button *ngIf="textArea" (click)="clearText()" mat-raised-button class="danger btn2">Clear</button>
 			</div>
 		</div>
 
 		<!-- Container to displayupload file -->
 		<div *ngIf="!textArea" style="cursor: pointer;">
-			<label for="fileDropReff" class="dropzone mat-elevation-z8 info" style="cursor: pointer; height:20vh">
-				<h5>Cliquez pour téléverser un fichier </h5>
+			<label for="fileDropReff" class="dropzone mat-elevation-z8 info">
+				<h5>Click to upload</h5>
 				<img src="assets/icons/upload.png" alt="" class="mb-1">
 				<input type="file" accept=".txt,.zip" (change)="sendToSpacy($event)" #myInput class="mt-1"
 					id="fileDropReff">
-				<h5>(type txt jusqu'à 1000 ko, zip jusqu'à 350 ko)</h5>
+				<h5>File type: txt (max: 1000 KB) or Zip (max: 350 KB)</h5>
 				
 			</label>
 		</div>
@@ -49,9 +48,8 @@
 			
 			<!-- Container to display found location -->
 			<div class="mb-2" *ngIf="noRepeatedCities.length > 0">
-				<mat-select placeholder="{{noRepeatedCities.length}} Lieux trouvés dans la BDD :" 
-						class="w-100 p-2 white rounded mat-elevation-z8"
-						style="height: 4vh;">
+				<mat-select placeholder="{{noRepeatedCities.length}} Places found by Spacy & in DB :" 
+						class="w-100 p-2 white rounded mat-elevation-z5 btn-title">
 						<mat-option *ngFor="let location of noRepeatedCities">
 							{{location.city}} - {{location.country}}
 						</mat-option>
@@ -60,9 +58,8 @@
 
 			<!-- Container to display unknown location -->
 			<div class="mb-2 w-100 d-flex" *ngIf="notFoundRepeatedCities.length > 0">
-				<mat-select placeholder="{{notFoundRepeatedCities.length}} Lieux non reconnus dans la BDD :"
-					class="col p-2 warning rounded mat-elevation-z8"
-					style="height: 4vh;">
+				<mat-select placeholder="{{notFoundRepeatedCities.length}} Places found by Spacy but not in DB :"
+					class="col p-2 warning rounded mat-elevation-z5 btn-title">
 					<mat-option *ngFor="let location of notFoundRepeatedCities">
 						{{location.city}}
 					</mat-option>
@@ -80,14 +77,14 @@
 
 		<!-- Container to display confused location -->
 		<div *ngIf="duplicatedCities.length > 0">
-			<p class="white mat-elevation-z8 rounded w-100 secondary"
-				style="padding: 6px; margin-bottom:5px; font-size:14px; height:4vh">Lieux ambigus :</p>
-			<div [ngClass]="{'rounded height2' :textArea, 'rounded height1' :!textArea}" style="height: 35vh;">
+			<p class="white mat-elevation-z8 rounded w-100 secondary btn-title"
+				style="padding: 6px; margin-bottom:5px; font-size:14px;">Places found by Spacy, but duplicated in DB :</p>
+			<div [ngClass]="{'rounded height2' :textArea, 'rounded height1' :!textArea}" >
 
 				<Div *ngFor="let dups of multiDuplicatedCities; let j=index" style="border-bottom: 2px solid rgb(138, 138, 138);">
 					<div *ngFor="let location of dups; let i=index">
 
-						<div class="secondary p-1 my-1 rounded ">
+						<div class="secondary p-1 rounded ">
 							<input type="radio" name="radio{{j}}" value="{{location.city}}" id="checkbox{{i}}"
 								(click)="confirmLocation($event,location.id)">
 							<span class="ml-1">
@@ -97,25 +94,26 @@
 					</div>
 				</Div>
 			</div>
-			<button class="secondary rounded mat-elevation-z4 p-2 mb-1"
-				style="border: none; width:100%; height:5vh" 
-				
+			<button class="secondary rounded mat-elevation-z4 p-2 mb-1 btn3"
 				*ngIf="duplicatedCities.length > 0"
-				(click)="displayOnMap()">Afficher sur la carte
+				(click)="displayOnMap()">
+				Display on the map
 			</button>
 		</div>
 
-		<button class="light primary rounded mat-elevation-z4 p-2 mb-1"
-			style="border: none; width:100%; height:5vh"
-
+		<button class="light primary rounded mat-elevation-z4 p-2 mb-1 btn3"
 			*ngIf="notFoundRepeatedCities.length > 0 || noRepeatedCities.length > 0 || multiDuplicatedCities.length > 0"
-			(click)="exportCSV()">Exporter en CSV
+			(click)="exportCSV()">
+			Export as CSV
 		</button>
 	</div>
 
-	<div class="map">
+	<div class="map pr-2">
 		<!-- Container to display MAP -->
-		<div class="row" id="map" [ngStyle]="{'height':textArea ? '76vh':'70vh'}">
+		<div
+			class="row"
+			[ngClass]="{'map1' :textArea, 'map2' :!textArea}" 
+			id="map">
 			<!-- Center Icon -->
 
 			<!-- Afficher le bouton "centrer" en cas de "selecetionner un nom du fichier" -->
@@ -168,3 +166,5 @@
 	</div>
 	
 </div>
+
+<!--class="row" [ngStyle]="{'height':textArea ? '76vh':'70vh'}"-->

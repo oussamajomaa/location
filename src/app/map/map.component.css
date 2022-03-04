@@ -12,6 +12,26 @@
     z-index: 100;
 }
 
+.btn1{
+    height: 6vh;
+    width: 45%;
+}
+
+.btn2{
+    height: 5vh;
+    width: 45%;
+}
+
+.btn-title{
+    height: 4vh;
+}
+
+.btn3{
+    border: none;
+    width:100%;
+    height:5vh
+}
+
 .content{
     /* height: 93vh; */
     padding-left: 15px;
@@ -19,11 +39,18 @@
     padding-top: 15px;
 }
 
+.map1{
+    height: 76vh;
+}
+
+.map2{
+    height: 70vh;
+}
 
 #map {
     position: relative;
     border: #17A2B8 1px solid;
-    height: 70vh;
+    /* height: 70vh; */
   }
 
   .slider{
@@ -31,22 +58,14 @@
 }
 
 
-.height1{
-    /* height: 225px; */
+.height1,.height2{
     overflow-y: scroll;
     width: 100%;
     margin: auto;
     margin-bottom: 10px;
+    height: 35vh;
 }
 
-.height2{
-    /* height: 225px; */
-    overflow-y: scroll;
-    width: 100%;
-    margin: auto;
-    margin-bottom: 10px;
-
-}
 
 .height1::-webkit-scrollbar {
     width: 1px;   
@@ -58,55 +77,19 @@
 
 
 .dropzone{
+    height: 20vh;
     width: 100% ;
-    /* height: 150px; */
     position: relative;
-    /* border: solid 1px black; */
     display: flex;
-    /* justify-content: space-around; */
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    /* margin-bottom: 10px; */
-
-    
+    cursor: pointer;
   }
 
   .dropzone img{
       height: 64px;
   }
-
- /* .buttons{
-     height: 64px;
- } */
-
- .carto{
-     height: 5%;
- }
-
-  /* .textArea{
-      width: 100%;
-      height:200px;
-  }
-
-  textarea{
-    height: 190px;
-} */
-
-
-  /* input[type='radio']:checked:after {
-    width: 15px;
-    height: 15px;
-    border-radius: 15px;
-    top: -2px;
-    left: -1px;
-    position: relative;
-    background-color: #FFC107;
-    content: '';
-    display: inline-block;
-    visibility: visible;
-} */
-
 
 
 #fileDropReff{
@@ -144,14 +127,16 @@
 }
 
 
+
+
 textarea
 {
+    height: 15vh;
     margin: 0;
     width:100%;
     padding:10px; 
     border: none;
     box-shadow: rgba(255, 255, 255, 0.2) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0.9) 0px 0px 0px 1px;
-    /* margin-bottom: 10px; */
 }
 
 h3, h2, label{
@@ -160,57 +145,24 @@ h3, h2, label{
 }
 
 
-.number-icon
-{
-  width: 24px !important;
-  height: 24px !important;
-  margin-left: -12px;
-  margin-top: -12px;
-  border-radius: 18px;
-  border: 2px solid #3F51B5;
-  text-align: center;
-  color: #3F51B5;
-  background-color: rgb(255, 0, 0);
-  font-size: 16px;  
-  z-index: 10000;
-}
-
-/* .confused{
-    height: 200px;
-} */
 
 
 
 .file{
     width: 29%;
-    /* position: relative; */
 }
 
 .map{
     width: 69%
 }
 
-/* .export-btn{
-    position: absolute;
-} */
 
 .content{
     display: flex;
     justify-content: space-between;
 }
 
-/* slider css */
-/* @media (min-width:7679px){
-    .content{
-        flex-direction: row;
-    }
-    .file{
-        width: 69%;
-    }
-    .map{
-        width: 29%
-    }
-} */
+
 @media (max-width:1024px){
     .content{
         flex-direction: column;
@@ -221,16 +173,15 @@ h3, h2, label{
     .map{
         width: 100%
     }
-    .slider,.height1,.height2,.inputs,.selects, .textArea{
+    .slider,.height1,.height2,  .btn2,.btn3, .map1,.map2{
         height: auto;
     }
     #map{
-        height: 768px;
+        height: 50vh;
         margin: 5px;
-
     }
     .slider{
-        margin-bottom: 100px;
+        margin-bottom: 50px;
     }
     /* textArea{
         height: 200px;

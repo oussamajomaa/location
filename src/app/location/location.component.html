@@ -13,13 +13,13 @@
         <!-- Container inputs -->
         <div class="row">
             <div class="col">
-                <label>Pays</label>
+                <label>Country</label>
                 <select [(ngModel)]="country" class="w-100 p-2" >
                     <option *ngFor="let row of countries" value="{{row.country_fr}}">{{row.country_fr}}</option>
                 </select>
             </div>
             <div class="col">
-                <label>Ville</label>
+                <label>Place</label>
                 <input [(ngModel)]="city" required class="w-100 p-2 rounded">
             </div>
             <div class="col">
@@ -41,7 +41,7 @@
         <!--  Button To add location to list -->
         <div class="d-flex justify-content-between my-2">
             <button mat-mini-fab (click)="onAddLocation()" class="bg-success" *ngIf='country && city && lat && lng'
-                matTooltip="Ajouter une autre location">
+                matTooltip="Add another location">
                 <mat-icon>add</mat-icon>
             </button>
         </div>
@@ -49,10 +49,10 @@
         <div class="row warning m-1 py-1 rounded" *ngIf="locations.length > 0">
             <hr>
             <div class="col">
-                <h3>Pays</h3>
+                <h3>Country</h3>
             </div>
             <div class="col">
-                <h3>Lieu</h3>
+                <h3>Place</h3>
             </div>
             <div class="col">
                 <h3>Lat</h3>
@@ -92,7 +92,7 @@
         </div>
         <div class="mx-1 my-3">
             <button class="submit" (click)="onSubmit()" mat-raised-button *ngIf="locations.length > 0"
-                style="display:block; margin-right:0;margin-left:auto;" class="success ">Valider & Enregistrer
+                style="display:block; margin-right:0;margin-left:auto;" class="success ">Save to DB
             </button>
         </div>
     </div>

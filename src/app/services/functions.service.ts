@@ -69,11 +69,11 @@ export class FunctionsService {
 	// Sauvegarder les ambigus et les lieus non reconnus dans deux fichier csv
 	exportCSV(foundCities:any[],notFoundCities:any[]) {
 		let found = []
-		foundCities.map(location => found.push({ lieu: location.city, country: location.country, occurence:location.occurence }))
+		foundCities.map(location => found.push({ place: location.city, country: location.country, occurence:location.occurence, mapped:'yes' }))
 		
 		// this.downloadFile(found, 'reconnu')
 		let notFound = []
-		notFoundCities.map(location => notFound.push({ lieu: location.city, country:"", occurence:"" }))
+		notFoundCities.map(location => notFound.push({ place: location.city, country:"", occurence:"", mapped:'no'  }))
 		let list = found.concat(notFound)
 		this.downloadFile(list, 'file')
 	}
